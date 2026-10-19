@@ -5,12 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kaupungin historialliset kartat</title>
 
-  <!-- 1. Load Leaflet's stylesheet (CSS) and code (JavaScript) from the internet.
-          Leaflet is the map library; you don't need to download anything. -->
+  <!-- Leaflet: the map library, loaded from the internet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <!-- 2. Our own styling. -->
   <style>
     body {
       font-family: system-ui, sans-serif;
@@ -19,53 +17,137 @@
       padding: 1.5rem;
     }
 
-    /* IMPORTANT: the map box needs an explicit height.
-       Without it the map is 0 pixels tall and you see nothing. */
+    /* The map box needs an explicit height or it will be invisible */
     #map {
       height: 500px;
       width: 100%;
       border-radius: 6px;
     }
+
+    /* The panel under the map that holds the switch and the description */
+    .layer-panel {
+      margin-top: 1rem;
+      padding: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+    }
+
+    /* ---- On/off switch styling ----
+       A real checkbox sits inside a <label>. We hide the checkbox itself
+       and draw a nicer-looking slider instead. You don't need to edit this. */
+    .switch {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .switch input {
+      position: absolute;
+      opacity: 0;
+    }
+    .slider {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      background: #bbb;
+      border-radius: 24px;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .slider::before {          /* the round knob */
+      content: "";
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 18px;
+      height: 18px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.2s;
+    }
+    .switch input:checked + .slider {
+      background: #2a7de1;
+    }
+    .switch input:checked + .slider::before {
+      transform: translateX(20px);
+    }
+    .switch input:focus-visible + .slider {
+      outline: 2px solid #2a7de1;
+      outline-offset: 2px;
+    }
+
+    .layer-description {
+      margin: 0.75rem 0 0;
+      color: #444;
+    }
   </style>
 </head>
 
 <body>
-  <!-- Link back to the front page ("../" means "go up one folder"). -->
   <p><a href="../index.html">← Takaisin etusivulle</a></p>
 
   <h1>Kaupungin historialliset kartat</h1>
-  <p>Testikartta: tähän tulee myöhemmin historiallisia karttoja.</p>
 
-  <!-- 3. The empty box where the map will appear. -->
+  <!-- The empty box where the map appears -->
   <div id="map"></div>
 
-  <!-- 4. Our JavaScript. This runs in the visitor's browser. -->
-  <script>
-    // Create a map inside the box with id "map".
-    // setView takes [latitude, longitude] and a zoom level (higher = closer).
-    var map = L.map('map').setView([60.1699, 24.9384], 13);
+  <!-- The layer panel: a switch and a description -->
+  <div class="layer-panel">
+    <label class="switch">
+      <input type="checkbox" id="toggle-senaatinkartta" checked>
+      <span class="slider"></span>
+      Senaatinkartta 1870
+    </label>
 
-    // Add a basemap. A basemap is a set of small square image "tiles"
-    // served by OpenStreetMap that Leaflet stitches together.
-    // The attribution text is required by OpenStreetMap's licence; keep it.
+    <!-- ✏️ EDIT THIS TEXT: write your own description of the layer here.
+         You can use normal HTML, e.g. <b>bold</b> or <a href="...">links</a>. -->
+    <p class="layer-description">
+      Kirjoita tähän kuvaus kartasta: kuka sen laati, milloin, mitä se esittää
+      ja miksi se on kiinnostava.
+    </p>
+  </div>
+
+  <script>
+    // ---- 1. Create the map ----
+    // setView takes [latitude, longitude] and a zoom level (higher = closer)
+    var map = L.map('map').setView([60.1699, 24.9384], 14);
+
+    // ---- 2. Basemap (modern map from OpenStreetMap) ----
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
-    // Add a marker with a popup, just to prove it works.
-    // Replace the coordinates and text with whatever you like.
-    L.marker([60.1699, 24.9522])
-      .addTo(map)
-      .bindPopup('Senaatintori, Helsinki');
+    // ---- 3. The WMS layer (the old map) ----
+    // WMS = Web Map Service. The map is NOT stored in your repo: the browser asks
+    // the City of Helsinki's server for the picture of the area currently on screen.
+    // Each setting below comes from the connection details you gave me:
+    //   url     -> the part after "url=" (decoded)
+    //   layers  -> the layer name on the server
+    //   format  -> image/png, so the layer can have transparent areas
+    var senaatinkartta = L.tileLayer.wms('https://kartta.hel.fi/ws/geoserver/avoindata/wms', {
+      layers: 'avoindata:Senaatinkartta_1870',
+      format: 'image/png',
+      transparent: true,   // lets the basemap show through where the old map has no data
+      opacity: 0.8,        // 1 = fully solid, 0 = invisible; lower it to see the basemap underneath
+      attribution: 'Senaatinkartta 1870: Helsingin kaupunki'
+    });
+
+    // Show it at the start, to match the switch being "checked" in the HTML
+    senaatinkartta.addTo(map);
+
+    // ---- 4. Connect the switch to the layer ----
+    var toggle = document.getElementById('toggle-senaatinkartta');
+
+    // "change" fires every time the switch is flipped
+    toggle.addEventListener('change', function () {
+      if (toggle.checked) {
+        map.addLayer(senaatinkartta);      // switch on: show the layer
+      } else {
+        map.removeLayer(senaatinkartta);   // switch off: hide the layer
+      }
+    });
   </script>
-var oldMap = L.tileLayer('tiles/{z}/{x}/{y}.jpg', {
-  minZoom: 11,
-  maxZoom: 19,
-  maxNativeZoom: 16,   // the highest zoom level you generated; Leaflet enlarges tiles beyond this
-  opacity: 0.7,
-  attribution: 'Map: [archive name]'
-}).addTo(map);
-  
 </body>
 </html>
