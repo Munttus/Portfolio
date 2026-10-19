@@ -1,1 +1,63 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kaupungin historialliset kartat</title>
 
+  <!-- 1. Load Leaflet's stylesheet (CSS) and code (JavaScript) from the internet.
+          Leaflet is the map library; you don't need to download anything. -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- 2. Our own styling. -->
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+
+    /* IMPORTANT: the map box needs an explicit height.
+       Without it the map is 0 pixels tall and you see nothing. */
+    #map {
+      height: 500px;
+      width: 100%;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Link back to the front page ("../" means "go up one folder"). -->
+  <p><a href="../index.html">← Takaisin etusivulle</a></p>
+
+  <h1>Kaupungin historialliset kartat</h1>
+  <p>Testikartta: tähän tulee myöhemmin historiallisia karttoja.</p>
+
+  <!-- 3. The empty box where the map will appear. -->
+  <div id="map"></div>
+
+  <!-- 4. Our JavaScript. This runs in the visitor's browser. -->
+  <script>
+    // Create a map inside the box with id "map".
+    // setView takes [latitude, longitude] and a zoom level (higher = closer).
+    var map = L.map('map').setView([60.1699, 24.9384], 13);
+
+    // Add a basemap. A basemap is a set of small square image "tiles"
+    // served by OpenStreetMap that Leaflet stitches together.
+    // The attribution text is required by OpenStreetMap's licence; keep it.
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // Add a marker with a popup, just to prove it works.
+    // Replace the coordinates and text with whatever you like.
+    L.marker([60.1699, 24.9522])
+      .addTo(map)
+      .bindPopup('Senaatintori, Helsinki');
+  </script>
+</body>
+</html>
