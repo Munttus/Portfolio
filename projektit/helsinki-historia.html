@@ -59,5 +59,13 @@
       .addTo(map)
       .bindPopup('Senaatintori, Helsinki');
   </script>
+var oldMap = L.tileLayer('tiles/helsinki1837/{z}/{x}/{y}.jpg', {
+  minZoom: 11,
+  maxZoom: 19,
+  maxNativeZoom: 16,   // the highest zoom level you generated; Leaflet enlarges tiles beyond this
+  opacity: 0.7,
+  attribution: 'Map: [archive name]'
+}).addTo(map);
+  
 </body>
 </html>
