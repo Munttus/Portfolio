@@ -1,0 +1,153 @@
+{
+  "kartat": [
+    {
+      "id": "pitajankuvauskartta-1749",
+      "ryhma": "pohja",
+      "tyyppi": "wms",
+      "otsikko": "Helsingin pitäjän kartta 1749",
+      "vuosi": 1749,
+      "lyhyt": "Helsingin pitäjän kuvauskartta.",
+      "rajat": [[59.909, 24.765], [60.322, 25.290]],
+      "wms": {
+        "url": "https://kartta.hel.fi/ws/geoserver/avoindata/wms",
+        "layers": "avoindata:Pitajakuvauskartta_1749"
+      },
+      "tarina": ["[Kirjoita tähän kartan taustatarina: kuka sen laati, mihin tarkoitukseen ja mitä siitä voi lukea.]"],
+      "lahde": {
+        "nimi": "Helsingin kaupunki / HRI, CC BY 4.0",
+        "url": "https://hri.fi/data/en/dataset/helsingin-historialliset-kartat"
+      }
+    },
+    {
+      "id": "rekognosointikartta-1780",
+      "ryhma": "pohja",
+      "tyyppi": "wms",
+      "otsikko": "Helsingin rekognosointikartta 1780–82",
+      "vuosi": 1780,
+      "lyhyt": "Helsingin seudun rekognosointikartta.",
+      "rajat": [[59.909, 24.765], [60.322, 25.290]],
+      "wms": {
+        "url": "https://kartta.hel.fi/ws/geoserver/avoindata/wms",
+        "layers": "avoindata:Rekognosointikartta_1780_1782"
+      },
+      "tarina": ["[Kirjoita tähän kartan taustatarina.]"],
+      "lahde": {
+        "nimi": "Helsingin kaupunki / HRI, CC BY 4.0",
+        "url": "https://hri.fi/data/en/dataset/helsingin-historialliset-kartat"
+      }
+    },
+    {
+      "id": "senaatinkartta-1870",
+      "ryhma": "pohja",
+      "tyyppi": "wms",
+      "otsikko": "Senaatinkartta 1870–1907",
+      "vuosi": 1870,
+      "lyhyt": "Venäläisten topografien laatima 1:21 000 kartta Etelä-Suomesta.",
+      "rajat": [[59.909, 24.765], [60.322, 25.290]],
+      "wms": {
+        "url": "https://kartta.hel.fi/ws/geoserver/avoindata/wms",
+        "layers": "avoindata:Senaatinkartta_1870"
+      },
+      "tarina": [
+        "Senaatinkartta on sarja Etelä-Suomen karttoja, jotka Venäjän armeijan topografijoukot piirsivät 1800-luvun lopulla ja 1900-luvun alussa mittakaavaan 1:21 000. Suomi osallistui kartoituksen kustannuksiin 102 000 ruplalla, minkä vuoksi se sai kustakin lehdestä kaksi kappaletta: toisen Maanmittausylihallitukselle ja toisen senaatin sota-asiaintoimituskunnalle. Tästä syystä kartoista on kaksi erilaista värityskertaa.",
+        "(Lähde: J. Strang 2014, Venäjän Suomi-kuva – Venäjä Suomen kartoittajana 1710–1942.)"
+      ],
+      "lahde": {
+        "nimi": "Helsingin kaupunki / HRI, CC BY 4.0",
+        "url": "https://hri.fi/data/en/dataset/helsingin-historialliset-kartat"
+      }
+    },
+    {
+      "id": "plan-af-helsingfors-1900",
+      "ryhma": "pohja",
+      "tyyppi": "wms",
+      "otsikko": "Plan af Helsingfors 1900",
+      "vuosi": 1900,
+      "lyhyt": "Helsingin matkailijakartta.",
+      "rajat": [[59.909, 24.765], [60.322, 25.290]],
+      "wms": {
+        "url": "https://kartta.hel.fi/ws/geoserver/avoindata/wms",
+        "layers": "avoindata:Plan_af_Helsingfors_1900"
+      },
+      "tarina": ["[Kirjoita tähän kartan taustatarina.]"],
+      "lahde": {
+        "nimi": "Helsingin kaupunki / HRI, CC BY 4.0",
+        "url": "https://hri.fi/data/en/dataset/helsingin-historialliset-kartat"
+      }
+    },
+    {
+      "id": "helsinki-ja-sen-alueet-1909",
+      "ryhma": "pohja",
+      "tyyppi": "wms",
+      "otsikko": "Kartta Helsingin kaupungista ja sen alueista 1909",
+      "vuosi": 1909,
+      "lyhyt": "Helsingin kaupunki ja sen alueet.",
+      "rajat": [[59.909, 24.765], [60.322, 25.290]],
+      "wms": {
+        "url": "https://kartta.hel.fi/ws/geoserver/avoindata/wms",
+        "layers": "avoindata:Kartta_Helsingin_kaupungista_ja_sen_alueista_1909"
+      },
+      "tarina": ["[Kirjoita tähän kartan taustatarina.]"],
+      "lahde": {
+        "nimi": "Helsingin kaupunki / HRI, CC BY 4.0",
+        "url": "https://hri.fi/data/en/dataset/helsingin-historialliset-kartat"
+      }
+    },
+    {
+      "id": "helsingin-kaupunki-1917",
+      "ryhma": "pohja",
+      "tyyppi": "wms",
+      "otsikko": "Helsingin kaupunki 1917–18",
+      "vuosi": 1917,
+      "lyhyt": "Kartta Helsingin kaupunginosista.",
+      "rajat": [[59.909, 24.765], [60.322, 25.290]],
+      "wms": {
+        "url": "https://kartta.hel.fi/ws/geoserver/avoindata/wms",
+        "layers": "avoindata:Helsingin_kaupunki_1917_1918"
+      },
+      "tarina": ["[Kirjoita tähän kartan taustatarina.]"],
+      "lahde": {
+        "nimi": "Helsingin kaupunki / HRI, CC BY 4.0",
+        "url": "https://hri.fi/data/en/dataset/helsingin-historialliset-kartat"
+      }
+    },
+    {
+      "id": "helsingin-kaupungin-kartta-1925",
+      "ryhma": "pohja",
+      "tyyppi": "wms",
+      "otsikko": "Helsingin kaupungin kartta 1925",
+      "vuosi": 1925,
+      "lyhyt": "Helsingin kaupungin kartta.",
+      "rajat": [[59.909, 24.765], [60.322, 25.290]],
+      "wms": {
+        "url": "https://kartta.hel.fi/ws/geoserver/avoindata/wms",
+        "layers": "avoindata:Helsingin_kaupungin_kartta_1925"
+      },
+      "tarina": ["[Kirjoita tähän kartan taustatarina.]"],
+      "lahde": {
+        "nimi": "Helsingin kaupunki / HRI, CC BY 4.0",
+        "url": "https://hri.fi/data/en/dataset/helsingin-historialliset-kartat"
+      }
+    },
+    {
+      "id": "esimerkki-asemakaava-1837",
+      "ryhma": "kohde",
+      "tyyppi": "tiili",
+      "otsikko": "Esimerkki: Helsingin asemakaava 1837",
+      "vuosi": 1837,
+      "lyhyt": "Korvaa tämä oikealla kartalla. Tämä rivi näkyy listakortissa.",
+      "rajat": [[60.158, 24.925], [60.175, 24.965]],
+      "minZoom": 12,
+      "maxZoom": 17,
+      "formaatti": "jpg",
+      "tarina": [
+        "Ensimmäinen kappale taustatarinasta: kuka kartan piirsi ja miksi.",
+        "Toinen kappale: mikä kaupungissa muuttui tämän kartan jälkeen. HTML-linkit toimivat, esim. <a href='https://example.com'>lisätietoa</a>."
+      ],
+      "lahde": {
+        "nimi": "Kansallisarkisto, kartta-aineisto",
+        "url": "https://astia.narc.fi/"
+      }
+    }
+  ]
+}

@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Suomen historialliset kartat</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  :root {
+    --bg: #f6f2ea;
+    --panel: #fffdf8;
+    --ink: #2b2620;
+    --muted: #7a6f60;
+    --accent: #8a3b2a;
+    --line: #e2d9c8;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: Georgia, "Times New Roman", serif;
+    color: var(--ink);
+    background: var(--bg);
+    display: grid;
+    grid-template-columns: 380px 1fr;
+  }
+  #sivu {
+    background: var(--panel);
+    border-right: 1px solid var(--line);
+    overflow-y: auto;
+    padding: 20px;
+  }
+  #sivu a.takaisin { font: 14px system-ui, sans-serif; color: var(--muted); text-decoration: none; }
+  #sivu h1 { font-size: 1.5rem; margin: 12px 0 4px; }
+  #sivu .ingressi { font: 14px/1.5 system-ui, sans-serif; color: var(--muted); margin: 0 0 8px; }
+
+  .ryhma-otsikko {
+    font: 600 12px system-ui, sans-serif;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 22px 0 4px;
+  }
+  .ryhma-ohje { font: 12px/1.4 system-ui, sans-serif; color: var(--muted); margin: 0 0 10px; }
+
+  .kortti {
+    display: flex; gap: 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 11px 13px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    background: #fff;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .kortti:hover { border-color: var(--accent); }
+  .kortti.aktiivinen { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(138,59,42,.15); }
+  .merkki {
+    flex: none; width: 16px; height: 16px; margin-top: 3px;
+    border: 2px solid var(--muted); background: #fff;
+  }
+  .merkki.pohja { border-radius: 50%; }
+  .merkki.kohde { border-radius: 3px; }
+  .kortti.aktiivinen .merkki { border-color: var(--accent); background: var(--accent); box-shadow: inset 0 0 0 2px #fff; }
+  .kortti .sisus { flex: 1; min-width: 0; }
+  .kortti .vuosi { font: 600 12px system-ui, sans-serif; color: var(--accent); letter-spacing: .04em; }
+  .kortti h2 { font-size: 1.02rem; margin: 2px 0 3px; }
+  .kortti p.lyhyt { font: 13px/1.45 system-ui, sans-serif; color: var(--muted); margin: 0; }
+  .kortti .saadin { font: 12px system-ui, sans-serif; margin-top: 8px; display: flex; gap: 8px; align-items: center; color: var(--muted); }
+  .kortti .saadin input { flex: 1; accent-color: var(--accent); }
+
+  /* Infonappi */
+  .info {
+    flex: none; align-self: flex-start;
+    width: 26px; height: 26px; border-radius: 50%;
+    border: 1.5px solid var(--accent); background: #fff; color: var(--accent);
+    font: italic 700 15px Georgia, serif; line-height: 1; cursor: pointer; padding: 0;
+  }
+  .info:hover, .info.auki { background: var(--accent); color: #fff; }
+
+  /* Taustatarina kortin sisällä */
+  .tarina {
+    margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line);
+    cursor: default;
+  }
+  .tarina p { font: 14px/1.6 Georgia, serif; margin: 0 0 10px; }
+  .tarina .lahde { font: 12px/1.5 system-ui, sans-serif; color: var(--muted); }
+  .tarina .lahde a { color: var(--accent); }
+
+  #kartta { height: 100%; }
+
+  @media (max-width: 800px) {
+    body { grid-template-columns: 1fr; grid-template-rows: 50vh 50vh; }
+    #kartta { order: 1; }
+    #sivu { order: 2; border-right: 0; border-top: 1px solid var(--line); }
+  }
+</style>
+</head>
+<body>
+
+<aside id="sivu">
+  <a class="takaisin" href="../../index.html">← Takaisin etusivulle</a>
+  <h1>Suomen historialliset kartat</h1>
+  <p class="ingressi">Valitse yksi pohjakartta ja lisää sen päälle pienempiä karttoja ja kaava-aineistoja. Napista <em>i</em> aukeaa kartan taustatarina.</p>
+
+  <div class="ryhma-otsikko">Pohjakartat</div>
+  <p class="ryhma-ohje">Laajat kartat. Vain yksi kerrallaan.</p>
+  <div id="lista-pohja"></div>
+
+  <div class="ryhma-otsikko">Kohdekartat ja kaavat</div>
+  <p class="ryhma-ohje">Pienemmät kartat. Voit valita useita, ne piirtyvät pohjakartan päälle.</p>
+  <div id="lista-kohde"></div>
+</aside>
+
+<div id="kartta"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  // --- Kartta ja tasojärjestys ---
+  // Nykykartta (OSM) alimpana, sen päällä pohjakartta, ylimpänä kohdekartat.
+  const kartta = L.map('kartta').setView([60.17, 24.94], 12);
+  kartta.createPane('pohjaPane');  kartta.getPane('pohjaPane').style.zIndex = 250;
+  kartta.createPane('kohdePane');  kartta.getPane('kohdePane').style.zIndex = 300;
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap-tekijät'
+  }).addTo(kartta);
+
+  const $ = id => document.getElementById(id);
+
+  let kartat = [];
+  let pohjaId = null;          // yksi aktiivinen pohjakartta
+  const kohdeIdt = [];         // useita aktiivisia kohdekarttoja
+  const tasot = {};            // id -> Leaflet-taso
+  const lapinakyvyys = {};     // id -> 0..1
+  let avoinTarinaId = null;    // minkä kortin tarina on auki
+
+  // --- Aineisto ---
+  fetch('data/kartat.json')
+    .then(r => r.json())
+    .then(data => {
+      kartat = data.kartat.sort((a, b) => a.vuosi - b.vuosi);
+      kartat.forEach(k => lapinakyvyys[k.id] = k.ryhma === 'pohja' ? 0.9 : 0.85);
+      lueHash();
+      piirraListat();
+    })
+    .catch(() => {
+      $('lista-pohja').textContent = 'Karttalistaa ei voitu ladata. Avaa sivu palvelimen kautta (GitHub Pages tai paikallinen palvelin).';
+    });
+
+  // --- Tason luonti ---
+  function luoTaso(k) {
+    const pane = k.ryhma === 'pohja' ? 'pohjaPane' : 'kohdePane';
+    const opac = lapinakyvyys[k.id];
+    if (k.tyyppi === 'wms') {
+      return L.tileLayer.wms(k.wms.url, {
+        layers: k.wms.layers,
+        format: k.wms.format || 'image/png',
+        transparent: true,
+        version: k.wms.version || '1.3.0',
+        pane, opacity: opac,
+        attribution: k.lahde ? k.lahde.nimi : ''
+      });
+    }
+    // oletus: omat XYZ-tiilet kansiosta kartat/<id>/{z}/{x}/{y}.jpg
+    return L.tileLayer(`kartat/${k.id}/{z}/{x}/{y}.${k.formaatti || 'jpg'}`, {
+      minZoom: k.minZoom || 10,
+      maxZoom: 21,
+      maxNativeZoom: k.maxZoom || 17,
+      bounds: L.latLngBounds(k.rajat),
+      pane, opacity: opac,
+      attribution: k.lahde ? k.lahde.nimi : ''
+    });
+  }
+
+  function lisaaTaso(k) { tasot[k.id] = luoTaso(k).addTo(kartta); }
+  function poistaTaso(id) {
+    if (tasot[id]) { kartta.removeLayer(tasot[id]); delete tasot[id]; }
+  }
+
+  // --- Valinnat ---
+  function valitsePohja(id) {
+    if (pohjaId) poistaTaso(pohjaId);
+    if (pohjaId === id) {                 // sama uudelleen = pois päältä
+      pohjaId = null;
+    } else {
+      const k = kartat.find(x => x.id === id);
+      pohjaId = id;
+      lisaaTaso(k);
+      kartta.fitBounds(k.rajat);
+    }
+    paivita();
+  }
+
+  function valitseKohde(id) {
+    const i = kohdeIdt.indexOf(id);
+    if (i >= 0) {
+      kohdeIdt.splice(i, 1);
+      poistaTaso(id);
+    } else {
+      const k = kartat.find(x => x.id === id);
+      kohdeIdt.push(id);
+      lisaaTaso(k);
+      kartta.fitBounds(k.rajat);
+    }
+    paivita();
+  }
+
+  function vaihdaTarina(id) {
+    avoinTarinaId = avoinTarinaId === id ? null : id;
+    piirraListat();
+  }
+
+  function paivita() {
+    piirraListat();
+    kirjoitaHash();
+  }
+
+  // --- Lista ---
+  function piirraListat() {
+    piirraRyhma('pohja', $('lista-pohja'));
+    piirraRyhma('kohde', $('lista-kohde'));
+  }
+
+  function onAktiivinen(k) {
+    return k.ryhma === 'pohja' ? pohjaId === k.id : kohdeIdt.includes(k.id);
+  }
+
+  function tarinaHtml(k) {
+    const kappaleet = (k.tarina || []).map(p => `<p>${p}</p>`).join('');
+    const lahde = k.lahde
+      ? '<div class="lahde">Lähde: ' +
+        (k.lahde.url ? `<a href="${k.lahde.url}" target="_blank" rel="noopener">${k.lahde.nimi}</a>` : k.lahde.nimi) +
+        '</div>'
+      : '';
+    return kappaleet + lahde;
+  }
+
+  function piirraRyhma(ryhma, kontti) {
+    kontti.innerHTML = '';
+    kartat.filter(k => k.ryhma === ryhma).forEach(k => {
+      const aktiivinen = onAktiivinen(k);
+      const tarinaAuki = avoinTarinaId === k.id;
+
+      const el = document.createElement('div');
+      el.className = 'kortti' + (aktiivinen ? ' aktiivinen' : '');
+      el.innerHTML = `<span class="merkki ${ryhma}"></span>
+        <div class="sisus"><div class="vuosi"></div><h2></h2><p class="lyhyt"></p></div>
+        <button class="info${tarinaAuki ? ' auki' : ''}" type="button"
+                aria-label="Taustatarina" aria-expanded="${tarinaAuki}">i</button>`;
+      el.querySelector('.vuosi').textContent = k.vuosi;
+      el.querySelector('h2').textContent = k.otsikko;
+      el.querySelector('.lyhyt').textContent = k.lyhyt || '';
+
+      const sisus = el.querySelector('.sisus');
+
+      if (aktiivinen) {
+        const s = document.createElement('div');
+        s.className = 'saadin';
+        s.innerHTML = '<span>Läpinäkyvyys</span><input type="range" min="0" max="1" step="0.05">';
+        const inp = s.querySelector('input');
+        inp.value = lapinakyvyys[k.id];
+        inp.addEventListener('click', e => e.stopPropagation());
+        inp.addEventListener('input', e => {
+          lapinakyvyys[k.id] = parseFloat(e.target.value);
+          if (tasot[k.id]) tasot[k.id].setOpacity(lapinakyvyys[k.id]);
+        });
+        sisus.appendChild(s);
+      }
+
+      if (tarinaAuki) {
+        const t = document.createElement('div');
+        t.className = 'tarina';
+        t.innerHTML = tarinaHtml(k);
+        t.addEventListener('click', e => e.stopPropagation());
+        sisus.appendChild(t);
+      }
+
+      el.querySelector('.info').addEventListener('click', e => {
+        e.stopPropagation();
+        vaihdaTarina(k.id);
+      });
+      el.addEventListener('click', () =>
+        ryhma === 'pohja' ? valitsePohja(k.id) : valitseKohde(k.id));
+      kontti.appendChild(el);
+    });
+  }
+
+  // --- Jaettava osoite: #p=<pohja>&k=<kohde1>,<kohde2> ---
+  function kirjoitaHash() {
+    const osat = [];
+    if (pohjaId) osat.push('p=' + pohjaId);
+    if (kohdeIdt.length) osat.push('k=' + kohdeIdt.join(','));
+    history.replaceState(null, '', osat.length ? '#' + osat.join('&') : location.pathname);
+  }
+
+  function lueHash() {
+    const h = new URLSearchParams(location.hash.slice(1));
+    let viimeisin = null;
+    const p = h.get('p');
+    const kp = kartat.find(k => k.id === p && k.ryhma === 'pohja');
+    if (kp) { pohjaId = p; lisaaTaso(kp); viimeisin = kp; }
+    (h.get('k') || '').split(',').filter(Boolean).forEach(id => {
+      const k = kartat.find(x => x.id === id && x.ryhma === 'kohde');
+      if (k) { kohdeIdt.push(id); lisaaTaso(k); viimeisin = k; }
+    });
+    if (viimeisin) kartta.fitBounds(viimeisin.rajat);
+  }
+</script>
+</body>
+</html>
