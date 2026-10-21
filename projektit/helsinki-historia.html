@@ -1,157 +1,186 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fi">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Historical maps</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Helsingin historialliset kartat</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  :root {
+    --bg: #f6f2ea;
+    --panel: #fffdf8;
+    --ink: #2b2620;
+    --muted: #7a6f60;
+    --accent: #8a3b2a;
+    --line: #e2d9c8;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: Georgia, "Times New Roman", serif;
+    color: var(--ink);
+    background: var(--bg);
+    display: grid;
+    grid-template-columns: 360px 1fr;
+  }
+  #sivu {
+    background: var(--panel);
+    border-right: 1px solid var(--line);
+    overflow-y: auto;
+    padding: 20px;
+  }
+  #sivu a.takaisin { font: 14px system-ui, sans-serif; color: var(--muted); text-decoration: none; }
+  #sivu h1 { font-size: 1.5rem; margin: 12px 0 4px; }
+  #sivu .ingressi { font: 14px/1.5 system-ui, sans-serif; color: var(--muted); margin: 0 0 16px; }
 
-  <!-- Leaflet: the map library, loaded from the internet -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  .kortti {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    background: #fff;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .kortti:hover { border-color: var(--accent); }
+  .kortti.aktiivinen { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(138,59,42,.15); }
+  .kortti .vuosi { font: 600 12px system-ui, sans-serif; color: var(--accent); letter-spacing: .04em; }
+  .kortti h2 { font-size: 1.05rem; margin: 2px 0 4px; }
+  .kortti p { font: 13px/1.45 system-ui, sans-serif; color: var(--muted); margin: 0; }
 
-  <style>
-    body {
-      font-family: system-ui, sans-serif;
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 1.5rem;
-    }
+  #tarina { margin-top: 18px; border-top: 2px solid var(--accent); padding-top: 14px; }
+  #tarina[hidden] { display: none; }
+  #tarina h2 { margin: 0 0 8px; font-size: 1.25rem; }
+  #tarina p { line-height: 1.6; margin: 0 0 12px; }
+  #tarina .lahde { font: 12px/1.5 system-ui, sans-serif; color: var(--muted); }
+  #tarina .lahde a { color: var(--accent); }
+  .saadin { font: 13px system-ui, sans-serif; margin: 12px 0; display: flex; gap: 10px; align-items: center; }
+  .saadin input { flex: 1; accent-color: var(--accent); }
+  button.sulje {
+    font: 13px system-ui, sans-serif; background: none; border: 1px solid var(--line);
+    border-radius: 6px; padding: 5px 10px; cursor: pointer; color: var(--muted);
+  }
 
-    /* The map box needs an explicit height or it will be invisible */
-    #map {
-      height: 500px;
-      width: 100%;
-      border-radius: 6px;
-    }
+  #kartta { height: 100%; }
 
-    /* The panel under the map that holds the switch and the description */
-    .layer-panel {
-      margin-top: 1rem;
-      padding: 1rem;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-    }
-
-    /* ---- On/off switch styling ----
-       A real checkbox sits inside a <label>. We hide the checkbox itself
-       and draw a nicer-looking slider instead. You don't need to edit this. */
-    .switch {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      cursor: pointer;
-      font-weight: 600;
-    }
-    .switch input {
-      position: absolute;
-      opacity: 0;
-    }
-    .slider {
-      position: relative;
-      width: 44px;
-      height: 24px;
-      background: #bbb;
-      border-radius: 24px;
-      transition: background 0.2s;
-      flex-shrink: 0;
-    }
-    .slider::before {          /* the round knob */
-      content: "";
-      position: absolute;
-      top: 3px;
-      left: 3px;
-      width: 18px;
-      height: 18px;
-      background: white;
-      border-radius: 50%;
-      transition: transform 0.2s;
-    }
-    .switch input:checked + .slider {
-      background: #2a7de1;
-    }
-    .switch input:checked + .slider::before {
-      transform: translateX(20px);
-    }
-    .switch input:focus-visible + .slider {
-      outline: 2px solid #2a7de1;
-      outline-offset: 2px;
-    }
-
-    .layer-description {
-      margin: 0.75rem 0 0;
-      color: #444;
-    }
-  </style>
+  @media (max-width: 800px) {
+    body { grid-template-columns: 1fr; grid-template-rows: 55vh 45vh; }
+    #kartta { order: 1; }
+    #sivu { order: 2; border-right: 0; border-top: 1px solid var(--line); }
+  }
+</style>
 </head>
-
 <body>
-  <p><a href="../index.html">← Takaisin etusivulle</a></p>
 
+<aside id="sivu">
+  <a class="takaisin" href="../index.html">← Takaisin etusivulle</a>
   <h1>Kaupungin historialliset kartat</h1>
+  <p class="ingressi">Valitse kartta ja lue sen tarina. Liukusäätimellä näet, miten kaupunki on muuttunut.</p>
+  <div id="lista"></div>
 
-  <!-- The empty box where the map appears -->
-  <div id="map"></div>
+  <section id="tarina" hidden>
+    <h2 id="t-otsikko"></h2>
+    <div class="saadin">
+      <label for="lapinakyvyys">Läpinäkyvyys</label>
+      <input id="lapinakyvyys" type="range" min="0" max="1" step="0.05" value="0.85">
+    </div>
+    <div id="t-teksti"></div>
+    <p class="lahde" id="t-lahde"></p>
+    <button class="sulje" id="sulje">Piilota kartta</button>
+  </section>
+</aside>
 
-  <!-- The layer panel: a switch and a description -->
-  <div class="layer-panel">
-    <label class="switch">
-      <input type="checkbox" id="toggle-senaatinkartta" checked>
-      <span class="slider"></span>
-      Senaatinkartta 1870
-    </label>
+<div id="kartta"></div>
 
-    <!-- ✏️ EDIT THIS TEXT: write your own description of the layer here.
-         You can use normal HTML, e.g. <b>bold</b> or <a href="...">links</a>. -->
-    <p class="layer-description">
-      The Senate Atlas is a series of maps of Southern Finland drawn by the Russian Army topographic troops in the end of the 19th and the beginning of the 20th centuries in scale 1:21 000, mapping out the southern parts of Finland. As Finland participated in the mapping costs for 102 000 rubles, (Strang, 2014) they were given two pieces of each map sheet that were then distributed to the governmental branche of land surveying (Maanmittausylihallitus) and the war-time committee of the Senate (sota-asiaintoimituskunta). This resulted in two different colorings. 
-      
-      Sources: 
-      J. Strang 2014, Venäjän Suomi-kuva – Venäjä Suomen kartoittajana 1710–1942
-      The WMS map tiles are published by Helsinki Region Infoshare.
-      OpenStreetMap. 
-    </p>
-  </div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  // --- Taustakartta ---
+  const kartta = L.map('kartta').setView([60.17, 24.94], 12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap-tekijät'
+  }).addTo(kartta);
 
-  <script>
-    // ---- 1. Create the map ----
-    // setView takes [latitude, longitude] and a zoom level (higher = closer)
-    var map = L.map('map').setView([60.1699, 24.9384], 14);
+  let kartat = [];
+  let aktiivinenId = null;
+  let aktiivinenTaso = null;
 
-    // ---- 2. Basemap (modern map from OpenStreetMap) ----
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
+  const $ = id => document.getElementById(id);
 
-    // ---- 3. The WMS layer (the old map) ----
-    // WMS = Web Map Service. The map is NOT stored in your repo: the browser asks
-    // the City of Helsinki's server for the picture of the area currently on screen.
-    // Each setting below comes from the connection details you gave me:
-    //   url     -> the part after "url=" (decoded)
-    //   layers  -> the layer name on the server
-    //   format  -> image/png, so the layer can have transparent areas
-    var senaatinkartta = L.tileLayer.wms('https://kartta.hel.fi/ws/geoserver/avoindata/wms', {
-      layers: 'avoindata:Senaatinkartta_1870',
-      format: 'image/png',
-      transparent: true,   // lets the basemap show through where the old map has no data
-      opacity: 1,        // 1 = fully solid, 0 = invisible; lower it to see the basemap underneath
-      attribution: 'Senaatinkartta 1870: Helsingin kaupunki'
+  // --- Aineiston lataus (data/kartat.json) ---
+  fetch('data/kartat.json')
+    .then(r => r.json())
+    .then(data => {
+      kartat = data.kartat.sort((a, b) => a.vuosi - b.vuosi);
+      piirraLista();
+      const id = location.hash.slice(1);
+      if (id) valitse(id);
+    })
+    .catch(() => {
+      $('lista').textContent = 'Karttalistaa ei voitu ladata. Avaa sivu palvelimen kautta (GitHub Pages tai paikallinen palvelin).';
     });
 
-    // Show it at the start, to match the switch being "checked" in the HTML
-    senaatinkartta.addTo(map);
-
-    // ---- 4. Connect the switch to the layer ----
-    var toggle = document.getElementById('toggle-senaatinkartta');
-
-    // "change" fires every time the switch is flipped
-    toggle.addEventListener('change', function () {
-      if (toggle.checked) {
-        map.addLayer(senaatinkartta);      // switch on: show the layer
-      } else {
-        map.removeLayer(senaatinkartta);   // switch off: hide the layer
-      }
+  function piirraLista() {
+    $('lista').innerHTML = '';
+    kartat.forEach(k => {
+      const el = document.createElement('div');
+      el.className = 'kortti';
+      el.dataset.id = k.id;
+      el.innerHTML = '<div class="vuosi"></div><h2></h2><p></p>';
+      el.querySelector('.vuosi').textContent = k.vuosi;
+      el.querySelector('h2').textContent = k.otsikko;
+      el.querySelector('p').textContent = k.lyhyt || '';
+      el.addEventListener('click', () => valitse(k.id));
+      $('lista').appendChild(el);
     });
-  </script>
+  }
+
+  // --- Kartan valinta ---
+  function valitse(id) {
+    const k = kartat.find(x => x.id === id);
+    if (!k) return;
+    poistaTaso();
+
+    const rajat = L.latLngBounds(k.rajat); // [[etelä, länsi], [pohjoinen, itä]]
+    aktiivinenTaso = L.tileLayer(`kartat/${k.id}/{z}/{x}/{y}.${k.tyyppi || 'jpg'}`, {
+      minZoom: k.minZoom || 10,
+      maxZoom: 21,
+      maxNativeZoom: k.maxZoom || 17,
+      bounds: rajat,
+      opacity: parseFloat($('lapinakyvyys').value),
+      attribution: k.lahde ? k.lahde.nimi : ''
+    }).addTo(kartta);
+
+    kartta.fitBounds(rajat);
+    aktiivinenId = id;
+    location.hash = id;
+
+    document.querySelectorAll('.kortti').forEach(e =>
+      e.classList.toggle('aktiivinen', e.dataset.id === id));
+
+    $('t-otsikko').textContent = k.otsikko;
+    $('t-teksti').innerHTML = (k.tarina || []).map(p => `<p>${p}</p>`).join('');
+    $('t-lahde').innerHTML = k.lahde
+      ? 'Lähde: ' + (k.lahde.url ? `<a href="${k.lahde.url}" target="_blank" rel="noopener">${k.lahde.nimi}</a>` : k.lahde.nimi)
+      : '';
+    $('tarina').hidden = false;
+  }
+
+  function poistaTaso() {
+    if (aktiivinenTaso) { kartta.removeLayer(aktiivinenTaso); aktiivinenTaso = null; }
+  }
+
+  $('lapinakyvyys').addEventListener('input', e => {
+    if (aktiivinenTaso) aktiivinenTaso.setOpacity(parseFloat(e.target.value));
+  });
+
+  $('sulje').addEventListener('click', () => {
+    poistaTaso();
+    aktiivinenId = null;
+    history.replaceState(null, '', location.pathname);
+    $('tarina').hidden = true;
+    document.querySelectorAll('.kortti').forEach(e => e.classList.remove('aktiivinen'));
+  });
+</script>
 </body>
 </html>
