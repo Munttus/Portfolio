@@ -1,6 +1,29 @@
 {
   "kartat": [
     {
+      "id": "litorinameri",
+      "ryhma": "pohja",
+      "tyyppi": "arcgis",
+      "otsikko": "Litorinameri (muinaisranta)",
+      "vuosi": -6000,
+      "vuosiTeksti": "Esihistoria",
+      "lyhyt": "Alue, jonka Litorinameri aikanaan peitti. GTK:n muinaisrantakerros.",
+      "rajat": [[59.5, 19.0], [70.2, 31.7]],
+      "arcgis": {
+        "url": "https://gtkdata.gtk.fi/arcgis/rest/services/Rajapinnat/GTK_Maapera_WMS/MapServer",
+        "taso": 20,
+        "suodatin": "STAGE='Subaquatic, Litorina'"
+      },
+      "tarina": [
+        "[Kirjoita tähän taustatarina: mikä Litorinameri oli, milloin se oli laajimmillaan ja miten se näkyy nykymaisemassa.]",
+        "Tekninen huomio: kartta on GTK:n Muinaisrannat-aineiston luokka 'Subakvaattinen, Litorina' (alueet, jotka olivat veden alla Litorinameren aikaan)."
+      ],
+      "lahde": {
+        "nimi": "Geologian tutkimuskeskus GTK, Muinaisrannat",
+        "url": "https://gtkdata.gtk.fi/arcgis/rest/services/Rajapinnat/GTK_Maapera_WMS/MapServer"
+      }
+    },
+    {
       "id": "pitajankuvauskartta-1749",
       "ryhma": "pohja",
       "tyyppi": "wms",
