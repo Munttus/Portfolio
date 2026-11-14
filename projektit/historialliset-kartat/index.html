@@ -21,7 +21,7 @@
     color: var(--ink);
     background: var(--bg);
     display: grid;
-    grid-template-columns: 380px 1fr;
+    grid-template-columns: clamp(440px, 34vw, 620px) 1fr;
   }
   #sivu {
     background: var(--panel);
@@ -148,10 +148,49 @@
       $('lista-pohja').textContent = 'Karttalistaa ei voitu ladata. Avaa sivu palvelimen kautta (GitHub Pages tai paikallinen palvelin).';
     });
 
+  // --- ArcGIS-karttapalvelun taso, jonka voi suodattaa (esim. GTK:n luokka) ---
+  // Käyttää palvelun /export-rajapintaa ja layerDefs-suodatinta, koska WMS ei
+  // osaa näyttää vain yhtä luokkaa tasosta.
+  L.TileLayer.ArcGISExport = L.TileLayer.extend({
+    initialize: function (palveluUrl, options) {
+      this._palveluUrl = palveluUrl.replace(/\/$/, '');
+      L.TileLayer.prototype.initialize.call(this, '', options);
+    },
+    getTileUrl: function (coords) {
+      const nwse = this._tileCoordsToNwSe(coords);
+      const crs = this._map.options.crs;
+      const nw = crs.project(nwse[0]);
+      const se = crs.project(nwse[1]);
+      const koko = this.getTileSize();
+      const p = new URLSearchParams({
+        f: 'image',
+        format: 'png32',
+        transparent: 'true',
+        bbox: [nw.x, se.y, se.x, nw.y].join(','),
+        bboxSR: '3857',
+        imageSR: '3857',
+        size: koko.x + ',' + koko.y,
+        layers: 'show:' + this.options.layerId
+      });
+      if (this.options.suodatin) {
+        p.set('layerDefs', JSON.stringify({ [this.options.layerId]: this.options.suodatin }));
+      }
+      return this._palveluUrl + '/export?' + p.toString();
+    }
+  });
+
   // --- Tason luonti ---
   function luoTaso(k) {
     const pane = k.ryhma === 'pohja' ? 'pohjaPane' : 'kohdePane';
     const opac = lapinakyvyys[k.id];
+    if (k.tyyppi === 'arcgis') {
+      return new L.TileLayer.ArcGISExport(k.arcgis.url, {
+        layerId: k.arcgis.taso,
+        suodatin: k.arcgis.suodatin,
+        pane, opacity: opac,
+        attribution: k.lahde ? k.lahde.nimi : ''
+      });
+    }
     if (k.tyyppi === 'wms') {
       return L.tileLayer.wms(k.wms.url, {
         layers: k.wms.layers,
@@ -248,7 +287,7 @@
         <div class="sisus"><div class="vuosi"></div><h2></h2><p class="lyhyt"></p></div>
         <button class="info${tarinaAuki ? ' auki' : ''}" type="button"
                 aria-label="Taustatarina" aria-expanded="${tarinaAuki}">i</button>`;
-      el.querySelector('.vuosi').textContent = k.vuosi;
+      el.querySelector('.vuosi').textContent = k.vuosiTeksti || k.vuosi;
       el.querySelector('h2').textContent = k.otsikko;
       el.querySelector('.lyhyt').textContent = k.lyhyt || '';
 
