@@ -82,7 +82,15 @@
     margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line);
     cursor: default;
   }
+  .tarina h3 { font: 600 1.1rem Georgia, serif; margin: 0 0 10px; }
   .tarina p { font: 14px/1.6 Georgia, serif; margin: 0 0 10px; }
+  .tarina .lahde ul { margin: 4px 0 0; padding-left: 18px; }
+  .tarina .lahde li { margin-bottom: 6px; }
+  a.paikka {
+    color: var(--accent); cursor: pointer;
+    text-decoration: underline dotted; text-underline-offset: 3px;
+  }
+  a.paikka:hover { text-decoration-style: solid; }
   .tarina .lahde { font: 12px/1.5 system-ui, sans-serif; color: var(--muted); }
   .tarina .lahde a { color: var(--accent); }
 
@@ -266,13 +274,40 @@
   }
 
   function tarinaHtml(k) {
+    const otsikko = k.tarinaOtsikko ? `<h3>${k.tarinaOtsikko}</h3>` : '';
     const kappaleet = (k.tarina || []).map(p => `<p>${p}</p>`).join('');
-    const lahde = k.lahde
-      ? '<div class="lahde">Lähde: ' +
-        (k.lahde.url ? `<a href="${k.lahde.url}" target="_blank" rel="noopener">${k.lahde.nimi}</a>` : k.lahde.nimi) +
-        '</div>'
-      : '';
-    return kappaleet + lahde;
+
+    // Lähteet: ensin karttatason oma lähde, sen jälkeen tekstin lisälähteet
+    const lahteet = [];
+    if (k.lahde) {
+      const l = k.lahde.url
+        ? `<a href="${k.lahde.url}" target="_blank" rel="noopener">${k.lahde.nimi}</a>`
+        : k.lahde.nimi;
+      lahteet.push('Karttataso: ' + l);
+    }
+    (k.lisalahteet || []).forEach(s => lahteet.push(s));
+
+    let lahde = '';
+    if (lahteet.length === 1) {
+      lahde = `<div class="lahde">Lähde: ${lahteet[0].replace(/^Karttataso: /, '')}</div>`;
+    } else if (lahteet.length > 1) {
+      lahde = '<div class="lahde">Lähteet:<ul>' +
+        lahteet.map(s => `<li>${s}</li>`).join('') + '</ul></div>';
+    }
+    return otsikko + kappaleet + lahde;
+  }
+
+  // Paikkalinkit tarinatekstissä: <a class="paikka" data-lat data-lng data-zoom>
+  function tarinaKlikki(e) {
+    e.stopPropagation();                       // ei kytke karttaa päälle/pois
+    const a = e.target.closest('a.paikka');
+    if (!a) return;
+    e.preventDefault();
+    kartta.flyTo(
+      [parseFloat(a.dataset.lat), parseFloat(a.dataset.lng)],
+      parseInt(a.dataset.zoom || '15', 10),
+      { duration: 1.2 }
+    );
   }
 
   function piirraRyhma(ryhma, kontti) {
@@ -311,7 +346,7 @@
         const t = document.createElement('div');
         t.className = 'tarina';
         t.innerHTML = tarinaHtml(k);
-        t.addEventListener('click', e => e.stopPropagation());
+        t.addEventListener('click', tarinaKlikki);
         sisus.appendChild(t);
       }
 
