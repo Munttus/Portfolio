@@ -108,24 +108,36 @@
 <aside id="sivu">
   <a class="takaisin" href="../../index.html">← Takaisin etusivulle</a>
   <h1>Suomen historialliset kartat</h1>
-  <p class="ingressi">Valitse yksi pohjakartta ja lisää sen päälle pienempiä karttoja ja kaava-aineistoja. Napista <em>i</em> aukeaa kartan taustatarina.</p>
+  <p class="ingressi">Valitse kartta klikkaamalla sitä. Napista <em>i</em> aukeaa kartan taustatarina.</p>
 
   <div class="ryhma-otsikko">Pohjakartat</div>
   <p class="ryhma-ohje">Laajat kartat. Vain yksi kerrallaan.</p>
   <div id="lista-pohja"></div>
 
-  <div class="ryhma-otsikko">Kohdekartat ja kaavat</div>
-  <p class="ryhma-ohje">Pienemmät kartat. Voit valita useita, ne piirtyvät pohjakartan päälle.</p>
-  <div id="lista-kohde"></div>
+  <div id="ryhma-kohde" hidden>
+    <div class="ryhma-otsikko">Kohdekartat ja kaavat</div>
+    <p class="ryhma-ohje">Pienemmät kartat. Voit valita useita, ne piirtyvät pohjakartan päälle.</p>
+    <div id="lista-kohde"></div>
+  </div>
 </aside>
 
 <div id="kartta"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
+  if (typeof L === 'undefined') {
+    document.getElementById('lista-pohja').textContent =
+      'Karttakirjastoa (Leaflet) ei voitu ladata. Tarkista verkkoyhteys ja lataa sivu uudelleen.';
+    throw new Error('Leaflet puuttuu');
+  }
+
   // --- Kartta ja tasojärjestys ---
   // Nykykartta (OSM) alimpana, sen päällä pohjakartta, ylimpänä kohdekartat.
-  const kartta = L.map('kartta').setView([60.17, 24.94], 12);
+  // Oletusnäkymä: kun karttataso avataan, kartta zoomaa tähän (Helsinki).
+  // Yksittäiselle kartalle voi antaa oman näkymän kentällä "nakyma": {"keski": [lat, lng], "zoom": 13}
+  const HELSINKI = { keski: [60.2, 24.95], zoom: 11 };
+
+  const kartta = L.map('kartta').setView(HELSINKI.keski, HELSINKI.zoom);
   kartta.createPane('pohjaPane');  kartta.getPane('pohjaPane').style.zIndex = 250;
   kartta.createPane('kohdePane');  kartta.getPane('kohdePane').style.zIndex = 300;
 
@@ -145,15 +157,28 @@
 
   // --- Aineisto ---
   fetch('data/kartat.json')
-    .then(r => r.json())
+    .then(r => {
+      if (!r.ok) throw new Error('Tiedostoa data/kartat.json ei löytynyt (virhe ' + r.status + '). Tarkista, että se on sivun kanssa samassa kansiossa alikansiossa data/.');
+      return r.text();
+    })
+    .then(teksti => {
+      try { return JSON.parse(teksti); }
+      catch (e) {
+        throw new Error('kartat.json:ssa on kirjoitusvirhe: ' + e.message + ' (yleensä puuttuva pilkku, ylimääräinen pilkku viimeisen rivin perässä tai lainausmerkki tekstin sisällä ilman \\-merkkiä).');
+      }
+    })
     .then(data => {
       kartat = data.kartat.sort((a, b) => a.vuosi - b.vuosi);
       kartat.forEach(k => lapinakyvyys[k.id] = k.ryhma === 'pohja' ? 0.9 : 0.85);
       lueHash();
       piirraListat();
     })
-    .catch(() => {
-      $('lista-pohja').textContent = 'Karttalistaa ei voitu ladata. Avaa sivu palvelimen kautta (GitHub Pages tai paikallinen palvelin).';
+    .catch(e => {
+      console.error(e);
+      const viesti = e instanceof TypeError
+        ? 'Karttalistaa ei voitu ladata. Jos avasit sivun tuplaklikkaamalla tiedostoa, avaa se palvelimen kautta (GitHub Pages tai python -m http.server).'
+        : e.message;
+      $('lista-pohja').textContent = viesti;
     });
 
   // --- ArcGIS-karttapalvelun taso, jonka voi suodattaa (esim. GTK:n luokka) ---
@@ -221,6 +246,12 @@
   }
 
   function lisaaTaso(k) { tasot[k.id] = luoTaso(k).addTo(kartta); }
+
+  function siirryNakymaan(k, ilmanAnimaatiota) {
+    const n = k.nakyma || HELSINKI;
+    if (ilmanAnimaatiota) kartta.setView(n.keski, n.zoom);
+    else kartta.flyTo(n.keski, n.zoom, { duration: 1.2 });
+  }
   function poistaTaso(id) {
     if (tasot[id]) { kartta.removeLayer(tasot[id]); delete tasot[id]; }
   }
@@ -234,7 +265,7 @@
       const k = kartat.find(x => x.id === id);
       pohjaId = id;
       lisaaTaso(k);
-      kartta.fitBounds(k.rajat);
+      siirryNakymaan(k);
     }
     paivita();
   }
@@ -248,7 +279,7 @@
       const k = kartat.find(x => x.id === id);
       kohdeIdt.push(id);
       lisaaTaso(k);
-      kartta.fitBounds(k.rajat);
+      siirryNakymaan(k);
     }
     paivita();
   }
@@ -267,6 +298,8 @@
   function piirraListat() {
     piirraRyhma('pohja', $('lista-pohja'));
     piirraRyhma('kohde', $('lista-kohde'));
+    // Kohdekartat-ryhmä näkyy vain, jos sellaisia on
+    $('ryhma-kohde').hidden = !kartat.some(k => k.ryhma === 'kohde');
   }
 
   function onAktiivinen(k) {
@@ -378,7 +411,7 @@
       const k = kartat.find(x => x.id === id && x.ryhma === 'kohde');
       if (k) { kohdeIdt.push(id); lisaaTaso(k); viimeisin = k; }
     });
-    if (viimeisin) kartta.fitBounds(viimeisin.rajat);
+    if (viimeisin) siirryNakymaan(viimeisin, true);
   }
 </script>
 </body>
