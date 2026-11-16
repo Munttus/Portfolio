@@ -8,35 +8,25 @@
       "vuosi": -6000,
       "vuosiTeksti": "Esihistoria",
       "lyhyt": "Alue, jonka Litorinameri aikanaan peitti. GTK:n muinaisrantakerros.",
-      "rajat": [
-        [
-          59.5,
-          19.0
-        ],
-        [
-          70.2,
-          31.7
-        ]
-      ],
       "arcgis": {
         "url": "https://gtkdata.gtk.fi/arcgis/rest/services/Rajapinnat/GTK_Maapera_WMS/MapServer",
         "taso": 20,
         "suodatin": "STAGE='Subaquatic, Litorina'"
       },
+      "tarinaOtsikko": "Esihistoriallinen Helsinki",
       "tarina": [
-        "Jääkauden väistyttyä 9500 vuotta sitten alue oli aluksi repaleista saaristoa. Maankohoamisen myötä nykyinen Helsingin alue alkoi erottua pysyvästi osana manteretta. Aluksi Suomen rannikkoa ympäröi Ancylusjärvi joka sittemmin muuttui Litorinamereksi, joka oli Itämeren suolaisempi ja ympäristöltään valtamerellisempi edeltäjä. Maankohoamisen ja Tanskan salmen kavennuttua syntyi sitten Itämeri nykyisessä vähäsuolaisessa muodossaan noin 2000 vuotta sitten. Karttatasona tässä on GTK:n mallinnus Litorinameren rannikkoviivasta noin 8000 vuotta sitten.",
-        "Varhaisimmat asutuksen merkit ajoittuvat noin 5000 vuotta ennen ajanlaskun alkua ja tämän esihistoriallisen ajan asutuksia on löydetty etenkin Mätäjoen jokilaakson alueelta joka muinaisina aikoina olikin enemmänkin Mätäsaaristo tai myöhemmin Mätälahti. Uskotaan että varhaisimmat elinkeinot liittyivät hylkeenpyyntiin ja onnekas luontobongari voi nykyäänkin ihastella hylkeiden hyllymistä Helsingin vesistöillä.",
-        "Pitkään vallinneen käsityksen mukaan väestö oli kuitenkin vähäistä rautakaudella ja vasta ruotsalaisten ristiretkien ja siirtolaisten myötä 1200-luvun jälkeen alueelle alkoi syntyä varsinaisia kyliä. Tätä on kuitenkin alettu epäilemään sillä siitepölytutkimusten perusteella Suomen etelärannikolla on viljelty etenkin ruista. Tutkijat epäilevätkin että arkeologisten löytöjen vähyys voi selittyä sillä, että esihistorialliset asuinpaikat ovat sijainneet samoilla paikoilla kuin nykyinen asutus jolloin löytöjä on vaikeampi tehdä."
+        "Jääkauden väistyttyä 9500 vuotta sitten alue oli aluksi repaleista saaristoa. Maankohoamisen myötä nykyinen Helsingin alue alkoi erottua pysyvästi osana manteretta. Aluksi Suomen rannikkoa ympäröi Ancylusjärvi, joka sittemmin muuttui Litorinamereksi. Litorinameri oli Itämeren suolaisempi ja ympäristöltään valtamerellisempi edeltäjä. Maankohoamisen ja Tanskan salmien kaventumisen myötä syntyi Itämeri nykyisessä vähäsuolaisessa muodossaan noin 2000 vuotta sitten. Karttatasona tässä on GTK:n mallinnus Litorinameren rannikkoviivasta noin 8000 vuotta sitten.",
+        "Varhaisimmat asutuksen merkit ajoittuvat noin 5000 vuotta ennen ajanlaskun alkua. Esihistoriallisen ajan asutuksia on löydetty etenkin Mätäjoen jokilaakson alueelta, joka muinaisina aikoina oli pikemminkin Mätäsaaristo tai myöhemmin Mätälahti. Uskotaan, että varhaisimmat elinkeinot liittyivät hylkeenpyyntiin, ja onnekas luontobongari voi nykyäänkin ihastella hylkeiden hyllymistä Helsingin vesistöillä.",
+        "Pitkään vallinneen käsityksen mukaan väestö oli kuitenkin vähäistä rautakaudella, ja vasta ruotsalaisten ristiretkien ja siirtolaisten myötä 1200-luvun jälkeen alueelle alkoi syntyä varsinaisia kyliä. Tätä on kuitenkin alettu epäillä, sillä siitepölytutkimusten perusteella Suomen etelärannikolla on viljelty etenkin ruista. Tutkijat epäilevätkin, että arkeologisten löytöjen vähyys voi selittyä sillä, että esihistorialliset asuinpaikat ovat sijainneet samoilla paikoilla kuin nykyinen asutus, jolloin löytöjä on vaikeampi tehdä."
+      ],
+      "lisalahteet": [
+        "Alenius, Teija; Haggrén, Georg; Koivisto, Satu; Vanhanen, Santeri &amp; Sugita, Shinya (2017). Landscape dynamics in southern Finland during the Iron Age and the Early Modern Era — Pollen-based landscape reconstruction (LRA), macrofossil and historical data from Western Uusimaa. <em>Journal of Archaeological Science: Reports</em> 12, 12–24.",
+        "Heikkinen, Markku &amp; Pääkkönen, Leo (25.2.2022). <a href=\"https://historia.hel.fi/fi/kaannekohdat/alkujuuret-ja-1500-luku/helsingin-esihistoriaa\" target=\"_blank\" rel=\"noopener\">Helsingin esihistoriaa</a>. Helsingin kaupunki, historia.hel.fi."
       ],
       "lahde": {
         "nimi": "Geologian tutkimuskeskus GTK, Muinaisrannat",
         "url": "https://gtkdata.gtk.fi/arcgis/rest/services/Rajapinnat/GTK_Maapera_WMS/MapServer"
-      },
-      "tarinaOtsikko": "Esihistoriallinen Helsinki",
-      "lisalahteet": [
-        "Alenius, Teija; Haggrén, Georg; Koivisto, Satu; Vanhanen, Santeri; Sugita, Shinya. (2017). Landscape dynamics in southern Finland during the Iron Age and the Early Modern Era — Pollen-based landscape reconstruction (LRA), macrofossil and historical data from Western Uusimaa. Journal of Archaeological Science: Reports, 12, 12–24.",
-        "Markku Heikkinen ja Leo Pääkkönen: Helsingin esihistoriaa. 25. helmikuuta 2022. <a href=\"https://historia.hel.fi/fi/kaannekohdat/alkujuuret-ja-1500-luku/helsingin-esihistoriaa\" target=\"_blank\" rel=\"noopener\">historia.hel.fi</a>"
-      ]
+      }
     },
     {
       "id": "pitajankuvauskartta-1749",
@@ -44,60 +34,23 @@
       "tyyppi": "wms",
       "otsikko": "Helsingin pitäjän kartta 1749",
       "vuosi": 1749,
-      "lyhyt": "Helsingin pitäjän kuvauskartta.",
-      "rajat": [
-        [
-          59.909,
-          24.765
-        ],
-        [
-          60.322,
-          25.29
-        ]
-      ],
+      "lyhyt": "Maanmittari Fredrik Fonsénin piirtämä kartta Helsingin pitäjästä.",
       "wms": {
         "url": "https://kartta.hel.fi/ws/geoserver/avoindata/wms",
         "layers": "avoindata:Pitajakuvauskartta_1749"
       },
-      "tarina": [
-        "Geographisk charta öfver Helsinge sokn, uti Borgå härad och Nylands län belägen, afmät år 1749 on maanmittari Friedrik Johan Fonseenin (s. 1711, Rauma) piirtämä kartta Helsingin pitäjästä sekä lähialueista. Karttaa säilytetään Ruotsin valtionarkistossa (Riksarkivet) ja kartan mittakaava on noin 1:5000.",
-        "Kartalla korostuu kolme Helsinkiä: alkuperäinen <a href=\"#\" class=\"paikka\" data-lat=\"60.283523\" data-lng=\"24.985738\" data-zoom=\"15\">Helsingin pitäjän kirkonkylä</a>, <a href=\"#\" class=\"paikka\" data-lat=\"60.215806\" data-lng=\"24.978056\" data-zoom=\"14\">Vanhakaupunginlahti</a> sekä <a href=\"#\" class=\"paikka\" data-lat=\"60.173323\" data-lng=\"24.955274\" data-zoom=\"15\">Vironniemelle</a> siirretty nykyinen keskusta-alue.",
-        "Helsingin pitäjän kirkonkylä sijaitsee Keravajoenlaaksossa kohdassa jossa Keravanjoki yhdistyy Vantaanjokeen. Paikalla yhdistyivät myös vanhat Turun ja Viipurin välinen maantie sekä rannikolta Hämeenlinnaan kulkeva väylä. Kirkonkylä mainitaan ensimmäisen kerran kirjallisena lähteenä vuonna 1351 ja paikalla sijaitsee edelleen pääkaupunkiseudun vanhin rakennus eli 1400-luvun puolivälissä valmistunut keskiaikainen kivikirkko.",
-        "Vantaanjokea laskeuduttaessa törmäämmekin seuraavaksi perustettuun, ensimmäiseen viralliseen Helsinkiin eli Kustaa Vaasan määräyksestä Koskelan kylän paikalle 1550 perustettuun Helsinkiin."
-      ],
-      "lahde": {
-        "nimi": "Helsingin kaupunki / HRI, CC BY 4.0",
-        "url": "https://hri.fi/data/en/dataset/helsingin-historialliset-kartat"
-      },
       "tarinaOtsikko": "Helsingin pitäjän kartta",
-      "lisalahteet": [
-        "Yrjö Kotivuori, Ylioppilasmatrikkeli 1640–1852: Fredrik Johan Fonsén. Verkkojulkaisu 2005. <a href=\"https://ylioppilasmatrikkeli.fi/henkilo.php?id=6168\" target=\"_blank\" rel=\"noopener\">ylioppilasmatrikkeli.fi</a>. Luettu 11.11.2026.",
-        "Museovirasto, Valtakunnallisesti merkittävät rakennetut kulttuuriympäristöt RKY. Helsingin pitäjän kirkonkylä. Verkkojulkaisu 2009. <a href=\"https://www.rky.fi/read/asp/r_kohde_det.aspx?KOHDE_ID=1506\" target=\"_blank\" rel=\"noopener\">rky.fi</a>"
-      ]
-    },
-    {
-      "id": "rekognosointikartta-1780",
-      "ryhma": "pohja",
-      "tyyppi": "wms",
-      "otsikko": "Helsingin rekognosointikartta 1780–82",
-      "vuosi": 1780,
-      "lyhyt": "Helsingin seudun rekognosointikartta.",
-      "rajat": [
-        [
-          59.909,
-          24.765
-        ],
-        [
-          60.322,
-          25.29
-        ]
-      ],
-      "wms": {
-        "url": "https://kartta.hel.fi/ws/geoserver/avoindata/wms",
-        "layers": "avoindata:Rekognosointikartta_1780_1782"
-      },
       "tarina": [
-        "[Kirjoita tähän kartan taustatarina.]"
+        "<em>Geographisk charta öfver Helsinge sokn, uti Borgå härad och Nylands län belägen, afmät år 1749</em> on maanmittari Fredrik Johan Fonsénin (s. 1711, Rauma) piirtämä kartta Helsingin pitäjästä sekä lähialueista. Karttaa säilytetään Ruotsin valtionarkistossa (Riksarkivet), ja kartan mittakaava on noin 1:5000.",
+        "Kartalla korostuu kolme Helsinkiä: alkuperäinen <a href=\"#\" class=\"paikka\" data-lat=\"60.283523\" data-lng=\"24.985738\" data-zoom=\"15\">Helsingin pitäjän kirkonkylä</a>, <a href=\"#\" class=\"paikka\" data-lat=\"60.215806\" data-lng=\"24.978056\" data-zoom=\"14\">Vanhankaupunginlahti</a> sekä <a href=\"#\" class=\"paikka\" data-lat=\"60.173323\" data-lng=\"24.955274\" data-zoom=\"15\">Vironniemelle</a> siirretty nykyinen keskusta-alue.",
+        "Helsingin pitäjän kirkonkylä sijaitsee Keravanjoen laaksossa, kohdassa jossa Keravanjoki yhdistyy Vantaanjokeen. Paikalla yhdistyivät myös vanha Turun ja Viipurin välinen maantie sekä rannikolta Hämeenlinnaan kulkeva väylä. Kirkonkylä mainitaan ensimmäisen kerran kirjallisessa lähteessä vuonna 1351, ja paikalla sijaitsee edelleen pääkaupunkiseudun vanhin rakennus eli 1400-luvun puolivälissä valmistunut keskiaikainen kivikirkko.",
+        "Vantaanjokea laskeuduttaessa törmäämme seuraavaksi ensimmäiseen viralliseen Helsinkiin eli Kustaa Vaasan määräyksestä Koskelan kylän paikalle vuonna 1550 perustettuun kaupunkiin. Noin sata vuotta myöhemmin kaupunki kuitenkin siirrettiin nykyiselle paikalleen, koska Vanhankaupunginlahti osoittautui liian matalaksi toimiakseen tehokkaana satamakaupunkina.",
+        "Mielenkiintoisina yksityiskohtina voi bongata esimerkiksi Jollaksen kartanotilukset, jotka sijaitsevat edelleen samalla paikalla. Suomenlinnan saarilinnoituksen rakentaminen oli juuri aloitettu kartan tekoaikaan, joskaan se ei vielä näy kartalla varsinaisesti."
+      ],
+      "lisalahteet": [
+        "Kotivuori, Yrjö (2005). <a href=\"https://ylioppilasmatrikkeli.fi/henkilo.php?id=6168\" target=\"_blank\" rel=\"noopener\">Fredrik Johan Fonsén</a>. Ylioppilasmatrikkeli 1640–1852, verkkojulkaisu. Luettu 11.11.2026.",
+        "Historia.hel.fi: <a href=\"https://historia.hel.fi/fi/kaannekohdat/1600-luku/kaupungin-taantuminen-ja-siirto-vironniemelle\" target=\"_blank\" rel=\"noopener\">Kaupungin taantuminen ja siirto Vironniemelle</a>.",
+        "Museovirasto (2009). <a href=\"https://www.rky.fi/read/asp/r_kohde_det.aspx?KOHDE_ID=1506\" target=\"_blank\" rel=\"noopener\">Helsingin pitäjän kirkonkylä</a>. Valtakunnallisesti merkittävät rakennetut kulttuuriympäristöt RKY, verkkojulkaisu."
       ],
       "lahde": {
         "nimi": "Helsingin kaupunki / HRI, CC BY 4.0",
@@ -110,84 +63,20 @@
       "tyyppi": "wms",
       "otsikko": "Senaatinkartta 1870–1907",
       "vuosi": 1870,
+      "vuosiTeksti": "1870–1907",
       "lyhyt": "Venäläisten topografien laatima 1:21 000 kartta Etelä-Suomesta.",
-      "rajat": [
-        [
-          59.909,
-          24.765
-        ],
-        [
-          60.322,
-          25.29
-        ]
-      ],
       "wms": {
         "url": "https://kartta.hel.fi/ws/geoserver/avoindata/wms",
         "layers": "avoindata:Senaatinkartta_1870"
       },
-     "tarina": [
-  "Senaatinkartta on sarja Etelä-Suomen karttoja, jotka Venäjän armeijan topografijoukot piirsivät 1800-luvun lopulla ja 1900-luvun alussa mittakaavaan 1:21 000. Suomi osallistui kartoituksen kustannuksiin 102 000 ruplalla, minkä vuoksi se sai kustakin lehdestä kaksi kappaletta: toisen Maanmittausylihallitukselle ja toisen senaatin sota-asiaintoimituskunnalle. Tästä syystä kartoista on kaksi erilaista värityskertaa.",
-  "Karttoja myös hieman päivitettiin värittäessä vuosien 1870-1907 väleillä joten rakennusten ja teiden suhteen kartta ei tarkasti kuvaa yksittäistä vuotta. Maastokuvaus on kuitenkin tarkkaa ja karttahistoroitsija Jan Strang onkin kuvannut kartaston olevan ensimmäinen peruskarttoihin rinnastettava kartasto Etelä-Suomesta.",
-  "Tarkasta vuosiluvusta huolimatta kartta kuvaa mielenkiintoista aikaa Helsingistä. Kantakaupunki on laajennut Kampin ja Punavuoren alueille mutta Kallio ja Töölö ovat vielä harvemmin asuttuja alueita.",
-  "(Lähde: J. Strang 2014, Venäjän Suomi-kuva – Venäjä Suomen kartoittajana 1710–1942.)"
-],
-      "lahde": {
-        "nimi": "Helsingin kaupunki / HRI, CC BY 4.0",
-        "url": "https://hri.fi/data/en/dataset/helsingin-historialliset-kartat"
-      }
-    },
-    {
-      "id": "plan-af-helsingfors-1900",
-      "ryhma": "pohja",
-      "tyyppi": "wms",
-      "otsikko": "Plan af Helsingfors 1900",
-      "vuosi": 1900,
-      "lyhyt": "Helsingin matkailijakartta.",
-      "rajat": [
-        [
-          59.909,
-          24.765
-        ],
-        [
-          60.322,
-          25.29
-        ]
-      ],
-      "wms": {
-        "url": "https://kartta.hel.fi/ws/geoserver/avoindata/wms",
-        "layers": "avoindata:Plan_af_Helsingfors_1900"
-      },
+      "tarinaOtsikko": "Senaatin kartasto",
       "tarina": [
-        "[Kirjoita tähän kartan taustatarina.]"
+        "Senaatinkartta on sarja Etelä-Suomen karttoja, jotka Venäjän armeijan topografijoukot piirsivät 1800-luvun lopulla ja 1900-luvun alussa mittakaavaan 1:21 000. Suomi osallistui kartoituksen kustannuksiin 102 000 ruplalla, minkä vuoksi se sai kustakin lehdestä kaksi kappaletta: toisen Maanmittausylihallitukselle ja toisen senaatin sota-asiaintoimituskunnalle. Tästä syystä kartoista on kaksi erilaista värityskertaa.",
+        "Karttoja myös hieman päivitettiin värittäessä vuosien 1870–1907 välillä, joten rakennusten ja teiden suhteen kartta ei kuvaa tarkasti yksittäistä vuotta. Maastokuvaus on kuitenkin tarkkaa, ja karttahistorioitsija Jan Strang onkin kuvannut kartaston olevan ensimmäinen peruskarttoihin rinnastettava kartasto Etelä-Suomesta.",
+        "Tarkan vuosiluvun puuttumisesta huolimatta kartta kuvaa mielenkiintoista aikaa Helsingissä. Kantakaupunki on laajentunut Kampin ja Punavuoren alueille, mutta Kallio ja Töölö ovat vielä harvaan asuttuja alueita."
       ],
-      "lahde": {
-        "nimi": "Helsingin kaupunki / HRI, CC BY 4.0",
-        "url": "https://hri.fi/data/en/dataset/helsingin-historialliset-kartat"
-      }
-    },
-    {
-      "id": "helsinki-ja-sen-alueet-1909",
-      "ryhma": "pohja",
-      "tyyppi": "wms",
-      "otsikko": "Kartta Helsingin kaupungista ja sen alueista 1909",
-      "vuosi": 1909,
-      "lyhyt": "Helsingin kaupunki ja sen alueet.",
-      "rajat": [
-        [
-          59.909,
-          24.765
-        ],
-        [
-          60.322,
-          25.29
-        ]
-      ],
-      "wms": {
-        "url": "https://kartta.hel.fi/ws/geoserver/avoindata/wms",
-        "layers": "avoindata:Kartta_Helsingin_kaupungista_ja_sen_alueista_1909"
-      },
-      "tarina": [
-        "[Kirjoita tähän kartan taustatarina.]"
+      "lisalahteet": [
+        "Strang, Jan (2014). <em>Venäjän Suomi-kuva – Venäjä Suomen kartoittajana 1710–1942</em>."
       ],
       "lahde": {
         "nimi": "Helsingin kaupunki / HRI, CC BY 4.0",
@@ -200,85 +89,25 @@
       "tyyppi": "wms",
       "otsikko": "Helsingin kaupunki 1917–18",
       "vuosi": 1917,
-      "lyhyt": "Kartta Helsingin kaupunginosista.",
-      "rajat": [
-        [
-          59.909,
-          24.765
-        ],
-        [
-          60.322,
-          25.29
-        ]
-      ],
+      "vuosiTeksti": "1917–1918",
+      "lyhyt": "Helsingin kaupungin opaskartta, jonka on julkaissut F. Tilgmann.",
       "wms": {
         "url": "https://kartta.hel.fi/ws/geoserver/avoindata/wms",
         "layers": "avoindata:Helsingin_kaupunki_1917_1918"
       },
+      "tarinaOtsikko": "Helsingin kaupunki 1917–18",
       "tarina": [
-        "[Kirjoita tähän kartan taustatarina.]"
+        "Vuosi 1917 oli Suomen historiassa käänteentekevä. Venäjällä tapahtuneiden vallankumousten ohella Suomen eduskunnassa itsenäisyyttä havittelevat edustajat näkivät tilaisuutensa tulleen. P. E. Svinhufvud luki eduskunnalle 4. joulukuuta itsenäisyysjulistuksen <a href=\"#\" class=\"paikka\" data-lat=\"60.169075\" data-lng=\"24.948716\" data-zoom=\"17\">Heimolan talossa</a>, ja kaksi päivää myöhemmin eduskunta äänesti itsenäisyydestä äänin 100–88. Heimolan talo purettiin valitettavasti vuonna 1969, ja paikalla sijaitsee nykyään huomattavasti kulmikkaampi modernistinen liikerakennus, jonka lasinen torni on nyökkäys myöhäisjugendia edustaneen Heimolan talon tornille.",
+        "Helsingin kaupungin opaskartta vuosilta 1917–1918. Kartan on julkaissut edelleen toiminnassa oleva painotalo Aktiebolaget F. Tilgmann.",
+        "Karttaa on tehty ennakoivasti myös sittemmin toteutumattomien asemakaavasuunnitelmien pohjalta. Esimerkiksi <a href=\"#\" class=\"paikka\" data-lat=\"60.185708\" data-lng=\"24.938389\" data-zoom=\"16\">Helsinginkadulle</a> Alppipuiston puolelle on merkitty kortteleita kallioiden kohdalle. Myös Töölössä <a href=\"#\" class=\"paikka\" data-lat=\"60.180063\" data-lng=\"24.914313\" data-zoom=\"16\">Paulligin huvilan</a> sekä Sibeliuksenkadun kohdalle oltiin kaavailtu tiiviimpää korttelirakennetta."
+      ],
+      "lisalahteet": [
+        "Yle: <a href=\"https://yle.fi/a/3-9852561\" target=\"_blank\" rel=\"noopener\">yle.fi/a/3-9852561</a>.",
+        "Historia.hel.fi: <a href=\"https://historia.hel.fi/fi/ilmiot/helsingin-asukkaat/helsingin-vaestonkehityksen-suuntaviivoja\" target=\"_blank\" rel=\"noopener\">Helsingin väestönkehityksen suuntaviivoja</a>."
       ],
       "lahde": {
         "nimi": "Helsingin kaupunki / HRI, CC BY 4.0",
         "url": "https://hri.fi/data/en/dataset/helsingin-historialliset-kartat"
-      }
-    },
-    {
-      "id": "helsingin-kaupungin-kartta-1925",
-      "ryhma": "pohja",
-      "tyyppi": "wms",
-      "otsikko": "Helsingin kaupungin kartta 1925",
-      "vuosi": 1925,
-      "lyhyt": "Helsingin kaupungin kartta.",
-      "rajat": [
-        [
-          59.909,
-          24.765
-        ],
-        [
-          60.322,
-          25.29
-        ]
-      ],
-      "wms": {
-        "url": "https://kartta.hel.fi/ws/geoserver/avoindata/wms",
-        "layers": "avoindata:Helsingin_kaupungin_kartta_1925"
-      },
-      "tarina": [
-        "[Kirjoita tähän kartan taustatarina.]"
-      ],
-      "lahde": {
-        "nimi": "Helsingin kaupunki / HRI, CC BY 4.0",
-        "url": "https://hri.fi/data/en/dataset/helsingin-historialliset-kartat"
-      }
-    },
-    {
-      "id": "esimerkki-asemakaava-1837",
-      "ryhma": "kohde",
-      "tyyppi": "tiili",
-      "otsikko": "Esimerkki: Helsingin asemakaava 1837",
-      "vuosi": 1837,
-      "lyhyt": "Korvaa tämä oikealla kartalla. Tämä rivi näkyy listakortissa.",
-      "rajat": [
-        [
-          60.158,
-          24.925
-        ],
-        [
-          60.175,
-          24.965
-        ]
-      ],
-      "minZoom": 12,
-      "maxZoom": 17,
-      "formaatti": "jpg",
-      "tarina": [
-        "Ensimmäinen kappale taustatarinasta: kuka kartan piirsi ja miksi.",
-        "Toinen kappale: mikä kaupungissa muuttui tämän kartan jälkeen. HTML-linkit toimivat, esim. <a href='https://example.com'>lisätietoa</a>."
-      ],
-      "lahde": {
-        "nimi": "Kansallisarkisto, kartta-aineisto",
-        "url": "https://astia.narc.fi/"
       }
     }
   ]
