@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Liikenneonnettomuudet Helsingissä</title>
+
+  <!-- Leaflet: the map library, loaded from the internet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1.5rem;
+      color: #222;
+      line-height: 1.5;
+    }
+
+    /* The map box needs an explicit height or it will be invisible */
+    #map {
+      height: clamp(420px, 68vh, 720px);
+      width: 100%;
+      border-radius: 6px;
+    }
+
+    /* ---- The control panels under the map ---- */
+    .panels {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .panel {
+      position: relative;
+      padding: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+    }
+    .panel h2 {
+      margin: 0 0 0.6rem;
+      font-size: 1.05rem;
+    }
+    .layer-description {
+      margin: 0.75rem 0 0;
+      color: #444;
+      font-size: 0.92rem;
+    }
+    .status {
+      margin: 0.5rem 0 0;
+      font-size: 0.8rem;
+      color: #777;
+    }
+    .status.error { color: #b42318; }
+    .hint { margin: 0.5rem 0 0; font-size: 0.85rem; color: #555; }
+
+    /* ---- On/off switch (same as on the first page) ---- */
+    .switch {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .switch input { position: absolute; opacity: 0; }
+    .slider {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      background: #bbb;
+      border-radius: 24px;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .slider::before {
+      content: "";
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 18px;
+      height: 18px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.2s;
+    }
+    .switch input:checked + .slider { background: #2a7de1; }
+    .switch input:checked + .slider::before { transform: translateX(20px); }
+    .switch input:focus-visible + .slider { outline: 2px solid #2a7de1; outline-offset: 2px; }
+
+    /* ---- Pill-style choice between two or more options ---- */
+    .seg {
+      position: relative;
+      display: inline-flex;
+      margin-top: 0.7rem;
+      border: 1px solid #bbb;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .seg label { cursor: pointer; }
+    .seg input { position: absolute; opacity: 0; }
+    .seg span {
+      display: block;
+      padding: 0.4rem 0.85rem;
+      background: #fff;
+      font-size: 0.9rem;
+    }
+    .seg label + label span { border-left: 1px solid #bbb; }
+    .seg input:checked + span { background: #2a7de1; color: #fff; }
+    .seg input:focus-visible + span { outline: 2px solid #2a7de1; outline-offset: -2px; }
+    .seg-title { margin: 0.8rem 0 0; font-size: 0.85rem; color: #555; }
+    .seg-title + .seg { margin-top: 0.3rem; }
+
+    select {
+      margin-top: 0.3rem;
+      width: 100%;
+      padding: 0.4rem;
+      font: inherit;
+      font-size: 0.92rem;
+    }
+    .field-label { display: block; margin-top: 0.8rem; font-size: 0.85rem; color: #555; }
+
+    /* ---- Legends ---- */
+    .legend ul { list-style: none; margin: 0.7rem 0 0; padding: 0; }
+    .legend li {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.85rem;
+      min-height: 1.4rem;
+    }
+    .legend .n { margin-left: auto; color: #666; font-variant-numeric: tabular-nums; }
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 1px solid rgba(0, 0, 0, 0.45);
+      flex-shrink: 0;
+    }
+    .line-sample { display: inline-block; width: 32px; background: #000; flex-shrink: 0; }
+    .line-sample.faint { opacity: 0.25; }
+
+    /* ---- Hover label on the traffic lines ---- */
+    .count-label {
+      font-size: 14px;
+      line-height: 1.35;
+      padding: 6px 9px;
+      border: 2px solid #ff6a00;
+      border-radius: 6px;
+    }
+    .cl-street { font-weight: 600; }
+    .cl-value { font-size: 17px; font-weight: 700; }
+    .cl-year { color: #666; font-size: 12px; }
+
+    .light-icon svg { display: block; }
+
+    footer { margin-top: 1.5rem; font-size: 0.8rem; color: #666; }
+  </style>
+</head>
+
+<body>
+  <p><a href="../index.html">← Takaisin etusivulle</a></p>
+
+  <h1>Liikenneonnettomuudet ja liikennemäärät Helsingissä</h1>
+
+  <!-- ✏️ EDIT THIS TEXT: your introduction to the map. -->
+  <p>Kirjoita tähän johdanto: mitä kartta esittää, mitä aineistoja käytit ja mitä huomioita teit.</p>
+
+  <!-- The empty box where the map appears -->
+  <div id="map"></div>
+
+  <div class="panels">
+
+    <!-- ============ Basemap ============ -->
+    <section class="panel">
+      <h2>Taustakartta</h2>
+      <div class="seg" role="radiogroup" aria-label="Taustakartta">
+        <label><input type="radio" name="basemap" value="osm" checked><span>OpenStreetMap</span></label>
+        <label><input type="radio" name="basemap" value="ortho"><span>Ilmakuva</span></label>
+      </div>
+      <p class="layer-description">
+        Vaihda taustakartan ja ilmakuvan välillä. Ilmakuvan päällä liikennemääräviivat
+        piirtyvät valkoisina, jotta ne erottuvat.
+      </p>
+    </section>
+
+    <!-- ============ Traffic counts ============ -->
+    <section class="panel">
+      <label class="switch">
+        <input type="checkbox" id="toggle-counts" checked>
+        <span class="slider"></span>
+        Liikennemäärät
+      </label>
+
+      <label class="field-label" for="measure">Näytä liikennemäärä</label>
+      <select id="measure"></select>
+      <p class="hint">Vie hiiri viivan päälle nähdäksesi tarkan määrän.</p>
+
+      <div class="legend" id="legend-counts"></div>
+
+      <!-- ✏️ EDIT THIS TEXT: your own description of the layer. -->
+      <p class="layer-description">
+        Ajoneuvoliikenteen liikennemäärät Helsingin katuverkolla. Viivan paksuus kuvaa
+        valitun liikennemäärän suuruutta. Jos laskentavuosi on 9999, määrä on arvioitu eikä
+        laskettu. Aineisto ei kata kaikkia Helsingin katuja.
+      </p>
+      <p class="status" id="status-counts">Ladataan…</p>
+    </section>
+
+    <!-- ============ Accidents ============ -->
+    <section class="panel">
+      <label class="switch">
+        <input type="checkbox" id="toggle-accidents" checked>
+        <span class="slider"></span>
+        Liikenneonnettomuudet
+      </label>
+
+      <p class="seg-title">Väritä onnettomuudet</p>
+      <div class="seg" role="radiogroup" aria-label="Onnettomuuksien väritys">
+        <label><input type="radio" name="accmode" value="laji" checked><span>Lajin mukaan</span></label>
+        <label><input type="radio" name="accmode" value="severity"><span>Vakavuuden mukaan</span></label>
+      </div>
+
+      <div class="legend" id="legend-accidents"></div>
+
+      <!-- ✏️ EDIT THIS TEXT: your own description of the layer. -->
+      <p class="layer-description">
+        Helsingissä tapahtuneet liikenneonnettomuudet. Onnettomuuden laji on määritetty
+        heikoimman osapuolen mukaan (esimerkiksi jalankulkijaonnettomuus). Aineisto on
+        täydellinen vain kuolemaan johtaneiden onnettomuuksien osalta; muiden onnettomuuksien
+        kirjaus on puutteellista. Klikkaa pistettä nähdäksesi tiedot.
+      </p>
+      <p class="status" id="status-accidents">Ladataan…</p>
+    </section>
+
+    <!-- ============ Traffic lights ============ -->
+    <section class="panel">
+      <label class="switch">
+        <input type="checkbox" id="toggle-lights">
+        <span class="slider"></span>
+        Liikennevalot
+      </label>
+
+      <!-- ✏️ EDIT THIS TEXT: your own description of the layer. -->
+      <p class="layer-description">
+        Liikennevalot Helsingissä. Klikkaa symbolia nähdäksesi tiedot.
+      </p>
+      <p class="status" id="status-lights">Ladataan, kun taso kytketään päälle.</p>
+    </section>
+
+  </div>
+
+  <footer>
+    Aineistot: Liikenneonnettomuudet Helsingissä, Helsingin kaupunkiympäristön toimiala /
+    Liikenne- ja katusuunnittelu (CC BY 4.0). Liikennemäärät, liikennevalot ja ortoilmakuva:
+    Helsingin kaupunki (kartta.hel.fi). Taustakartta © OpenStreetMap-tekijät.
+  </footer>
+
+  <script>
+    // =====================================================================
+    // 0. SETTINGS you may want to edit
+    // =====================================================================
+
+    // Where each layer's data comes from. The page tries the addresses in order
+    // and uses the first one that works. "data/..." means a file in a folder called
+    // "data" next to this HTML file (so: projektit/data/).
+    var WFS_COUNTS = 'https://kartta.hel.fi/ws/geoserver/avoindata/wfs'
+      + '?service=WFS&version=2.0.0&request=GetFeature'
+      + '&typeNames=avoindata:Ajoneuvoliikenne_liikennemaarat_viiva'
+      + '&outputFormat=application/json&srsName=EPSG:4326';
+
+    var SOURCES = {
+      counts:    ['data/liikennemaarat.geojson', WFS_COUNTS],  // your own file first, then the city's live service
+      accidents: ['data/onnettomuudet.geojson'],
+      lights:    ['data/liikennevalot.geojson']
+    };
+
+    // =====================================================================
+    // 1. Small helper functions
+    // =====================================================================
+
+    // Format a number the Finnish way: 12345 -> "12 345"
+    function fmt(n) {
+      return Number(n).toLocaleString('fi-FI', { maximumFractionDigits: 1 });
+    }
+
+    // Make text safe to put inside HTML (so a "<" in the data cannot break the page)
+    function esc(text) {
+      return String(text).replace(/[&<>"]/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+      });
+    }
+
+    function isEmpty(v) { return v === null || v === undefined || v === ''; }
+
+    function setStatus(name, text, isError) {
+      var el = document.getElementById('status-' + name);
+      el.textContent = text;
+      el.className = isError ? 'status error' : 'status';
+    }
+
+    // GeoJSON must list coordinates as [longitude, latitude]. If a server sends
+    // them the other way round (Helsinki is at about 60 N, 25 E), swap them back.
+    function swapXY(coords) {
+      if (typeof coords[0] === 'number') {
+        var t = coords[0]; coords[0] = coords[1]; coords[1] = t;
+      } else {
+        coords.forEach(swapXY);
+      }
+    }
+    function fixAxisOrder(data) {
+      var first = data.features.find(function (f) { return f.geometry; });
+      if (!first) return data;
+      var c = first.geometry.coordinates;
+      while (Array.isArray(c[0])) c = c[0];
+      if (c[0] > 55 && c[0] < 65 && c[1] > 20 && c[1] < 30) {
+        data.features.forEach(function (f) { if (f.geometry) swapXY(f.geometry.coordinates); });
+      }
+      return data;
+    }
+
+    // Download a GeoJSON file. "async/await" means: start the download, wait here
+    // until it has finished, then carry on. If one address fails, try the next one.
+    async function loadGeoJSON(urls) {
+      for (var i = 0; i < urls.length; i++) {
+        try {
+          var response = await fetch(urls[i]);
+          if (!response.ok) throw new Error('HTTP ' + response.status);
+          var data = await response.json();
+          if (!data.features) throw new Error('Not a GeoJSON feature collection');
+          return { data: fixAxisOrder(data), source: urls[i] };
+        } catch (err) {
+          console.warn('Could not load ' + urls[i] + ':', err);
+        }
+      }
+      throw new Error('None of the sources worked: ' + urls.join(', '));
+    }
+
+    // =====================================================================
+    // 2. The map and the two basemaps
+    // =====================================================================
+
+    // One shared "canvas" draws all lines and dots. It is much faster than
+    // drawing thousands of separate shapes. tolerance = how many pixels away from a
+    // thin line the mouse still counts as "on" the line.
+    var map = L.map('map', { renderer: L.canvas({ tolerance: 4 }) })
+      .setView([60.1699, 24.9384], 13);   // [latitude, longitude], zoom level
+
+    var basemaps = {
+      osm: L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }),
+      // Aerial photo from the City of Helsinki's WMS service (same service type as the Senate map)
+      ortho: L.tileLayer.wms('https://kartta.hel.fi/ws/geoserver/avoindata/wms', {
+        layers: 'avoindata:Ortoilmakuva',
+        format: 'image/png',
+        transparent: true,
+        maxZoom: 19,
+        attribution: 'Ilmakuva: Helsingin kaupunki'
+      })
+    };
+    var currentBase = 'osm';
+    basemaps.osm.addTo(map);
+
+    map.attributionControl.addAttribution(
+      'Onnettomuudet: Helsingin kaupunkiympäristön toimiala (CC BY 4.0)');
+
+    // =====================================================================
+    // 3. Layer: traffic counts (lines)
+    // =====================================================================
+
+    // The numbers you can choose from. "key" is the column name in the data.
+    // NOTE: the labels for ha, pa, ka, ra, la, mp and rv are my reading of the
+    // dataset description (cars, vans, trucks, lorries, buses, motorbikes, trams)
+    // - check them against the city's documentation and fix them if needed.
+    var KAVL_BREAKS = [100, 200, 300, 700, 2200, 6400];   // class limits from your QGIS style
+    var MEASURES = [
+      { key: 'syksyn_kavl', label: 'Kaikki ajoneuvot (syksyn KAVL)', unit: 'ajoneuvoa / arkivuorokausi', breaks: KAVL_BREAKS },
+      { key: 'autot',       label: 'Kaikki ajoneuvot (KAVL)',        unit: 'ajoneuvoa / arkivuorokausi', breaks: KAVL_BREAKS },
+      { key: 'ha',  label: 'Henkilöautot',   unit: 'ajoneuvoa / arkivuorokausi' },
+      { key: 'pa',  label: 'Pakettiautot',   unit: 'ajoneuvoa / arkivuorokausi' },
+      { key: 'ka',  label: 'Kuorma-autot',   unit: 'ajoneuvoa / arkivuorokausi' },
+      { key: 'ra',  label: 'Rekka-autot',    unit: 'ajoneuvoa / arkivuorokausi' },
+      { key: 'la',  label: 'Linja-autot',    unit: 'ajoneuvoa / arkivuorokausi' },
+      { key: 'mp',  label: 'Moottoripyörät', unit: 'ajoneuvoa / arkivuorokausi' },
+      { key: 'rv',  label: 'Raitiovaunut',   unit: 'ajoneuvoa / arkivuorokausi' },
+      { key: 'raskas_liik_pros', label: 'Raskaan liikenteen osuus', unit: '%' }
+    ];
+    var currentMeasure = MEASURES[0];
+    var breaks = currentMeasure.breaks;   // the class limits currently in use
+    var countFeatures = [];               // all line features, filled in once loaded
+
+    // Line widths of the 7 classes, in millimetres, from your QGIS style.
+    // (QGIS also had a "100-100" class that no value can fall into; it is skipped.)
+    var LINE_WIDTHS_MM = [0.15, 0.607, 0.836, 1.064, 1.293, 1.521, 1.75];
+    var MM_TO_PX = 3.78;
+
+    // Line colour: black on the street map, white on the aerial photo (black is invisible there)
+    function lineColor() { return currentBase === 'ortho' ? '#ffffff' : '#000000'; }
+
+    // Lines get thinner when zoomed out and a bit thicker when zoomed in
+    function zoomFactor() {
+      return Math.min(1.25, Math.max(0.45, (map.getZoom() - 8) / 6));
+    }
+
+    function getValue(feature) {
+      var v = feature.properties[currentMeasure.key];
+      return (isEmpty(v) || isNaN(v)) ? null : Number(v);
+    }
+
+    // For measures without fixed limits: split the lines into 7 classes with equally
+    // many lines in each. If some lines have the value 0, those get a class of their own.
+    function computeBreaks(measure, features) {
+      if (measure.breaks) return measure.breaks;
+      var positives = [];
+      var hasZero = false;
+      features.forEach(function (f) {
+        var v = f.properties[measure.key];
+        if (isEmpty(v) || isNaN(v)) return;
+        if (Number(v) > 0) positives.push(Number(v)); else hasZero = true;
+      });
+      positives.sort(function (a, b) { return a - b; });
+      var result = hasZero ? [0] : [];
+      if (!positives.length) return result;
+      var classes = hasZero ? 6 : 7;
+      var max = positives[positives.length - 1];
+      for (var i = 1; i < classes; i++) {
+        var b = positives[Math.floor(positives.length * i / classes)];
+        // a limit equal to the biggest value would leave nothing for the top class
+        if (b < max && result.indexOf(b) === -1) result.push(b);
+      }
+      return result;
+    }
+
+    // Which class does a value belong to? 0 = smallest.
+    function classIndex(v) {
+      for (var i = 0; i < breaks.length; i++) {
+        if (v <= breaks[i]) return i;
+      }
+      return breaks.length;
+    }
+
+    // Width in pixels for a class (spread over the 7 widths if there are fewer classes)
+    function widthPx(cls) {
+      var n = breaks.length + 1;
+      var idx = n === 1 ? 0 : Math.round(cls * (LINE_WIDTHS_MM.length - 1) / (n - 1));
+      return Math.max(1, LINE_WIDTHS_MM[idx] * MM_TO_PX);
+    }
+
+    function lineStyle(feature) {
+      var v = getValue(feature);
+      if (v === null) {   // no data for this measure: faint thin line
+        return { color: lineColor(), weight: 0.8, opacity: 0.25, lineCap: 'square', lineJoin: 'bevel' };
+      }
+      return {
+        color: lineColor(),
+        weight: Math.max(0.8, widthPx(classIndex(v)) * zoomFactor()),
+        opacity: 1,
+        lineCap: 'square',
+        lineJoin: 'bevel'
+      };
+    }
+
+    // The label that follows the mouse
+    function countsLabel(feature) {
+      var p = feature.properties;
+      var v = getValue(feature);
+      var street = isEmpty(p.katu) ? 'Katuosuus' : p.katu;
+      var value = (v === null) ? 'ei tietoa' : fmt(v) + ' ' + currentMeasure.unit;
+      var year = '';
+      if (!isEmpty(p.lvuosi)) year = (Number(p.lvuosi) === 9999) ? 'arvioitu' : 'laskentavuosi ' + p.lvuosi;
+      return '<span class="cl-street">' + esc(street) + '</span><br>' +
+             '<span class="cl-value">' + esc(value) + '</span>' +
+             (year ? '<br><span class="cl-year">' + esc(year) + '</span>' : '');
+    }
+
+    function renderCountsLegend() {
+      var n = breaks.length + 1;
+      var html = '<ul>';
+      for (var i = 0; i < n; i++) {
+        var label;
+        if (n === 1) label = 'Kaikki arvot';
+        else if (i === 0) label = (breaks[0] === 0) ? '0' : '≤ ' + fmt(breaks[0]);
+        else if (i === breaks.length) label = '> ' + fmt(breaks[i - 1]);
+        else label = (breaks[i - 1] === 0 ? '> 0' : fmt(breaks[i - 1])) + ' – ' + fmt(breaks[i]);
+        html += '<li><span class="line-sample" style="height:' + widthPx(i).toFixed(1) + 'px"></span>' +
+                label + '</li>';
+      }
+      var hasMissing = countFeatures.some(function (f) { return getValue(f) === null; });
+      if (hasMissing) html += '<li><span class="line-sample faint" style="height:1px"></span>Ei tietoa</li>';
+      document.getElementById('legend-counts').innerHTML = html + '</ul>';
+    }
+
+    function buildCounts(data) {
+      countFeatures = data.features;
+      breaks = computeBreaks(currentMeasure, countFeatures);
+
+      var layer = L.geoJSON(data, { style: lineStyle });
+
+      // One tooltip and one highlight rule for every line in the layer
+      layer.bindTooltip(function (line) { return countsLabel(line.feature); },
+        { sticky: true, direction: 'top', className: 'count-label' });
+
+      layer.on('mouseover', function (e) {       // mouse enters a line: highlight it
+        e.layer.setStyle({ color: '#ff6a00', weight: e.layer.options.weight + 3, opacity: 1 });
+        e.layer.bringToFront();
+      });
+      layer.on('mouseout', function (e) {        // mouse leaves: back to normal
+        layer.resetStyle(e.layer);
+        e.layer.bringToBack();
+      });
+
+      renderCountsLegend();
+      return layer;
+    }
+
+    // =====================================================================
+    // 4. Layer: accidents (dots)
+    // =====================================================================
+
+    // Colours are the ones from your QGIS style. Accident type (LAJI):
+    var LAJI_LIST = [
+      { key: 'JK', label: 'Jalankulkija (JK)',         long: 'Jalankulkijaonnettomuus',         color: '#d7191c', radius: 3 },
+      { key: 'MA', label: 'Moottoriajoneuvo (MA)',     long: 'Moottoriajoneuvo-onnettomuus',    color: '#fdae61', radius: 3 },
+      { key: 'MP', label: 'Mopo / moottoripyörä (MP)', long: 'Mopo- tai moottoripyöräonnettomuus', color: '#ffffbf', radius: 3 },
+      { key: 'PP', label: 'Polkupyörä (PP)',           long: 'Polkupyöräonnettomuus',           color: '#abdda4', radius: 3 },
+      { key: 'other', label: 'Muu / ei tietoa',        long: 'Laji ei tiedossa',                color: '#2b83ba', radius: 3, isOther: true }
+    ];
+    // Severity (VAKAV_A): 1 = property damage, 2 = injury, 3 = fatality. Bigger dot = more serious.
+    var SEVERITY_LIST = [
+      { key: '1', label: 'Omaisuusvahinko (1)', long: 'Omaisuusvahinko', color: '#fee08b', radius: 3 },
+      { key: '2', label: 'Vammautuminen (2)',   long: 'Vammautuminen',   color: '#f46d43', radius: 4.5 },
+      { key: '3', label: 'Kuolema (3)',         long: 'Kuolema',         color: '#a50026', radius: 6.5 },
+      { key: 'other', label: 'Muu / ei tietoa',  long: 'Vakavuus ei tiedossa', color: '#999999', radius: 3, isOther: true }
+    ];
+    var accMode = 'laji';   // 'laji' or 'severity'
+
+    function findCategory(list, key) {
+      for (var i = 0; i < list.length; i++) if (list[i].key === key) return list[i];
+      return list[list.length - 1];   // the "other" entry is always last
+    }
+    function lajiOf(p) {
+      return findCategory(LAJI_LIST, String(isEmpty(p.LAJI) ? '' : p.LAJI).trim().toUpperCase());
+    }
+    function severityOf(p) {
+      return findCategory(SEVERITY_LIST, String(isEmpty(p.VAKAV_A) ? '' : Number(p.VAKAV_A)));
+    }
+    function category(p) { return accMode === 'severity' ? severityOf(p) : lajiOf(p); }
+
+    function accidentStyle(feature) {
+      var c = category(feature.properties);
+      return { radius: c.radius, fillColor: c.color, fillOpacity: 1, color: '#000000', opacity: 0.45, weight: 0.6 };
+    }
+
+    function accidentPopup(p) {
+      return '<b>' + esc(lajiOf(p).long) + '</b><br>Vakavuus: ' + esc(severityOf(p).long) +
+             (isEmpty(p.VV) ? '' : '<br>Vuosi: ' + esc(p.VV));
+    }
+
+    function renderAccidentLegend() {
+      var list = (accMode === 'severity') ? SEVERITY_LIST : LAJI_LIST;
+      var counts = {};
+      if (state.accidents.layer) {
+        state.accidents.layer.eachLayer(function (dot) {
+          var k = category(dot.feature.properties).key;
+          counts[k] = (counts[k] || 0) + 1;
+        });
+      }
+      var html = '<ul>';
+      list.forEach(function (c) {
+        var n = counts[c.key] || 0;
+        if (c.isOther && n === 0) return;   // hide "other" when nothing falls in it
+        html += '<li><span class="dot" style="background:' + c.color + '"></span>' + c.label +
+                '<span class="n">' + fmt(n) + '</span></li>';
+      });
+      document.getElementById('legend-accidents').innerHTML = html + '</ul>';
+    }
+
+    function buildAccidents(data) {
+      var layer = L.geoJSON(data, {
+        pointToLayer: function (feature, latlng) { return L.circleMarker(latlng, {}); },
+        style: accidentStyle
+      });
+      layer.bindPopup(function (dot) { return accidentPopup(dot.feature.properties); });
+      return layer;
+    }
+
+    // =====================================================================
+    // 5. Layer: traffic lights (icons)
+    // =====================================================================
+
+    var lightIcon = L.divIcon({
+      className: 'light-icon',
+      iconSize: [14, 22],
+      iconAnchor: [7, 11],
+      popupAnchor: [0, -10],
+      html: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="22" viewBox="0 0 14 22">' +
+            '<rect x="1" y="1" width="12" height="20" rx="3" fill="#ff9891" stroke="#000" stroke-width="1.2"/>' +
+            '<circle cx="7" cy="5.5" r="2.2" fill="#d7191c"/>' +
+            '<circle cx="7" cy="11" r="2.2" fill="#fdb927"/>' +
+            '<circle cx="7" cy="16.5" r="2.2" fill="#2a9d4a"/></svg>'
+    });
+
+    function lightPopup(p) {
+      var rows = [['Risteys', p.risteys], ['Tyyppi', p.tyyppi], ['Numero', p.numero], ['Lisätiedot', p.lisatiedot]];
+      var lines = rows.filter(function (r) { return !isEmpty(r[1]); })
+                      .map(function (r) { return '<b>' + r[0] + ':</b> ' + esc(r[1]); });
+      return lines.length ? lines.join('<br>') : 'Liikennevalo';
+    }
+
+    function buildLights(data) {
+      var layer = L.geoJSON(data, {
+        pointToLayer: function (feature, latlng) { return L.marker(latlng, { icon: lightIcon, keyboard: false }); }
+      });
+      layer.bindPopup(function (marker) { return lightPopup(marker.feature.properties); });
+      return layer;
+    }
+
+    // =====================================================================
+    // 6. Loading the data and switching layers on and off
+    // =====================================================================
+
+    var state = {
+      counts:    { visible: true,  layer: null, loading: false, build: buildCounts },
+      accidents: { visible: true,  layer: null, loading: false, build: buildAccidents },
+      lights:    { visible: false, layer: null, loading: false, build: buildLights }
+    };
+
+    // Show or hide a layer according to its switch
+    function refresh(name) {
+      var s = state[name];
+      if (!s.layer) return;
+      if (s.visible) {
+        map.addLayer(s.layer);
+        // keep the lines underneath the accident dots
+        if (name === 'counts') s.layer.eachLayer(function (line) { line.bringToBack(); });
+      } else {
+        map.removeLayer(s.layer);
+      }
+    }
+
+    // Download a layer's data (only once) and put it on the map
+    async function ensureLoaded(name) {
+      var s = state[name];
+      if (s.layer || s.loading) return;
+      s.loading = true;
+      setStatus(name, 'Ladataan…');
+      try {
+        var result = await loadGeoJSON(SOURCES[name]);
+        var total = result.data.numberMatched || result.data.totalFeatures;
+        s.layer = s.build(result.data);
+        var text = fmt(result.data.features.length) + ' kohdetta ladattu';
+        var truncated = (typeof total === 'number' && total > result.data.features.length);
+        if (truncated) text += ' (palvelin antoi vain osan: yhteensä ' + fmt(total) + ')';
+        setStatus(name, text, truncated);
+        if (name === 'accidents') renderAccidentLegend();
+        refresh(name);
+      } catch (err) {
+        console.error(name, err);
+        setStatus(name, 'Aineiston lataus epäonnistui. Tarkista, että tiedosto ' +
+                  SOURCES[name][0] + ' on ladattu GitHubiin.', true);
+      }
+      s.loading = false;
+    }
+
+    // =====================================================================
+    // 7. Connecting the controls to the map
+    // =====================================================================
+
+    // On/off switches
+    ['counts', 'accidents', 'lights'].forEach(function (name) {
+      var box = document.getElementById('toggle-' + name);
+      box.checked = state[name].visible;
+      box.addEventListener('change', function () {
+        state[name].visible = box.checked;
+        if (box.checked) ensureLoaded(name);
+        refresh(name);
+      });
+    });
+
+    // Basemap choice
+    document.querySelectorAll('input[name="basemap"]').forEach(function (radio) {
+      radio.addEventListener('change', function () {
+        if (!radio.checked) return;
+        map.removeLayer(basemaps[currentBase]);
+        currentBase = radio.value;
+        basemaps[currentBase].addTo(map);
+        if (state.counts.layer) state.counts.layer.setStyle(lineStyle);   // line colour depends on the basemap
+      });
+    });
+
+    // Traffic-count measure choice
+    var measureSelect = document.getElementById('measure');
+    MEASURES.forEach(function (m, i) {
+      var option = document.createElement('option');
+      option.value = i;
+      option.textContent = m.label;
+      measureSelect.appendChild(option);
+    });
+    measureSelect.addEventListener('change', function () {
+      currentMeasure = MEASURES[measureSelect.value];
+      breaks = computeBreaks(currentMeasure, countFeatures);
+      if (state.counts.layer) state.counts.layer.setStyle(lineStyle);
+      renderCountsLegend();
+    });
+
+    // Accident colouring choice
+    document.querySelectorAll('input[name="accmode"]').forEach(function (radio) {
+      radio.addEventListener('change', function () {
+        if (!radio.checked) return;
+        accMode = radio.value;
+        if (state.accidents.layer) state.accidents.layer.setStyle(accidentStyle);
+        renderAccidentLegend();
+      });
+    });
+
+    // Re-draw the lines when the zoom level changes
+    map.on('zoomend', function () {
+      if (state.counts.layer) state.counts.layer.setStyle(lineStyle);
+    });
+
+    // =====================================================================
+    // 8. Start
+    // =====================================================================
+
+    renderCountsLegend();
+    renderAccidentLegend();
+    ['counts', 'accidents', 'lights'].forEach(function (name) {
+      if (state[name].visible) ensureLoaded(name);
+    });
+  </script>
+</body>
+</html>
