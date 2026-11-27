@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vuosaari Harbour – six months from space</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  :root {
+    --bg: #eef1f0;
+    --panel: #ffffff;
+    --ink: #24332f;
+    --muted: #8a9490;
+    --accent: #28745c;
+    --line: #d8dedb;
+    --measure: #e8590c;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: system-ui, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ---- Top bar: title + toolbar ---- */
+  header {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+    padding: 10px 16px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+  }
+  header .otsikko { margin-right: auto; }
+  header a.takaisin { font-size: 13px; color: var(--muted); text-decoration: none; }
+  header h1 { font-size: 1.15rem; margin: 2px 0 0; }
+
+  .tyokalut { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .ryhma {
+    display: flex; align-items: center; gap: 4px;
+    padding: 3px; border: 1px solid var(--line); border-radius: 8px; background: #fafbfa;
+  }
+  .ryhma .nimi { font-size: 11px; color: var(--muted); padding: 0 4px; text-transform: uppercase; letter-spacing: .05em; }
+  button, select, input[type=text] {
+    font: inherit; font-size: 13px;
+    border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--ink);
+    padding: 5px 9px; height: 30px;
+  }
+  button { cursor: pointer; }
+  button:hover { border-color: var(--accent); }
+  button.paalla { background: var(--measure); border-color: var(--measure); color: #fff; }
+  button.ensisijainen { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button:disabled { opacity: .45; cursor: default; }
+  input[type=text] { width: 130px; }
+  #mittaTulos { font-size: 13px; min-width: 70px; font-variant-numeric: tabular-nums; }
+
+  /* ---- Image panels: the grid splits the screen by the number of panels ---- */
+  #paneelit {
+    flex: 1; min-height: 0;
+    display: grid; gap: 10px; padding: 10px;
+  }
+  .paneeli {
+    position: relative; min-width: 0; min-height: 0;
+    display: grid; grid-template-rows: 1fr auto auto;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    overflow: hidden;
+  }
+  .paneeli .kartta { min-height: 200px; background: #dfe4e2; }
+  .paneeli .kartta.mittaus { cursor: crosshair; }
+  .paneeli .sulje {
+    position: absolute; top: 8px; right: 8px; z-index: 500;
+    width: 28px; height: 28px; padding: 0; border-radius: 50%; font-size: 16px; line-height: 1;
+  }
+  .paneeli .puuttuu {
+    position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%); z-index: 450;
+    max-width: 80%; padding: 10px 14px; border-radius: 6px;
+    background: rgba(255,255,255,.92); font-size: 13px; text-align: center; color: var(--ink);
+  }
+  .aikajana { display: flex; align-items: center; gap: 10px; padding: 8px 12px 2px; }
+  .aikajana .kk { font-weight: 600; font-size: 14px; min-width: 92px; }
+  .aikajana input { flex: 1; accent-color: var(--accent); }
+  .kuvateksti { margin: 0; padding: 2px 12px 8px; font-size: 11px; color: var(--muted); }
+
+  .leaflet-container { font: inherit; }
+  .mitta-label {
+    background: var(--measure); color: #fff; border: 0; font-weight: 600; font-size: 12px;
+  }
+  .mitta-label::before { display: none; }
+
+  @media (max-width: 800px) {
+    #paneelit { grid-template-columns: 1fr !important; grid-template-rows: none !important; grid-auto-rows: minmax(320px, 1fr); overflow-y: auto; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="otsikko">
+    <a class="takaisin" href="../../index.html">← Back to portfolio</a>
+    <h1>Vuosaari Harbour, six months from space</h1>
+  </div>
+
+  <div class="tyokalut">
+    <div class="ryhma">
+      <span class="nimi">Zoom</span>
+      <button id="zoomIn" title="Zoom in">+</button>
+      <button id="zoomOut" title="Zoom out">−</button>
+      <button id="zoomKoko" title="Zoom to the whole harbour">Harbour</button>
+    </div>
+
+    <div class="ryhma">
+      <span class="nimi">Measure</span>
+      <button id="mittaa" title="Click points on the image, double-click or Esc to finish">Distance</button>
+      <span id="mittaTulos"></span>
+      <button id="mittaTyhjenna" title="Clear the measurement" disabled>Clear</button>
+    </div>
+
+    <div class="ryhma">
+      <span class="nimi">Bookmarks</span>
+      <input id="kirjanmerkkiNimi" type="text" placeholder="Name this view">
+      <button id="kirjanmerkkiTallenna">Save</button>
+      <select id="kirjanmerkit" disabled><option value="">No bookmarks yet</option></select>
+    </div>
+
+    <button id="lisaa" class="ensisijainen" title="Add another image to compare side by side">+ Add image</button>
+  </div>
+</header>
+
+<main id="paneelit"></main>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  const $ = id => document.getElementById(id);
+
+  if (typeof L === 'undefined') {
+    $('paneelit').textContent = 'The map library (Leaflet) could not be loaded. Check your connection and reload.';
+    throw new Error('Leaflet missing');
+  }
+
+  let data = null;          // contents of data/kuvat.json
+  const paneelit = [];      // one entry per image panel: { el, kartta, kuva, indeksi, mitta }
+  let synkronoi = false;    // guard so that synced maps don't trigger each other forever
+
+  // Measuring state (shared: the line is drawn on every panel at once)
+  let mittaus = false;
+  let mittaPisteet = [];
+
+  // Bookmarks live only in this variable, so they disappear when the page is reloaded
+  const kirjanmerkit = [];
+
+  // ---------------------------------------------------------------- data
+  fetch('data/kuvat.json')
+    .then(r => {
+      if (!r.ok) throw new Error('data/kuvat.json was not found (error ' + r.status + ').');
+      return r.text();
+    })
+    .then(t => {
+      try { return JSON.parse(t); }
+      catch (e) { throw new Error('kuvat.json has a typo: ' + e.message); }
+    })
+    .then(d => {
+      data = d;
+      data.kuvat.sort((a, b) => a.kuukausi.localeCompare(b.kuukausi));
+      lisaaPaneeli(data.kuvat.length - 1);       // start with the newest month
+    })
+    .catch(e => {
+      console.error(e);
+      $('paneelit').textContent = e instanceof TypeError
+        ? 'The image list could not be loaded. Open the page through a server (GitHub Pages or python -m http.server), not by double-clicking the file.'
+        : e.message;
+    });
+
+  // ---------------------------------------------------------------- text helpers
+  const KUUKAUDET = ['January','February','March','April','May','June','July',
+                     'August','September','October','November','December'];
+
+  function kuukausiTeksti(kk) {            // "2026-05" -> "May 2026"
+    const [v, m] = kk.split('-');
+    return KUUKAUDET[parseInt(m, 10) - 1] + ' ' + v;
+  }
+
+  function pvmTeksti(k) {                  // "2026-05-14" -> "14 May 2026"
+    if (!k.pvm) return 'capture date not set';
+    const [v, m, p] = k.pvm.split('-');
+    let s = parseInt(p, 10) + ' ' + KUUKAUDET[parseInt(m, 10) - 1] + ' ' + v;
+    if (k.aika) s += ', ' + k.aika + ' UTC';
+    return s;
+  }
+
+  function koordTeksti(ll) {
+    return ll.lat.toFixed(4) + '° N, ' + ll.lng.toFixed(4) + '° E';
+  }
+
+  function etaisyysTeksti(m) {
+    return m < 1000 ? Math.round(m) + ' m' : (m / 1000).toFixed(2) + ' km';
+  }
+
+  // ---------------------------------------------------------------- panels
+  function lisaaPaneeli(indeksi) {
+    // Pick the first month that is not already on screen, if none given
+    if (indeksi === undefined) {
+      const kaytossa = paneelit.map(p => p.indeksi);
+      indeksi = data.kuvat.findIndex((_, i) => !kaytossa.includes(i));
+      if (indeksi < 0) indeksi = 0;
+    }
+
+    const el = document.createElement('section');
+    el.className = 'paneeli';
+    el.innerHTML = `
+      <div class="kartta"></div>
+      <button class="sulje" title="Remove this image" aria-label="Remove this image">×</button>
+      <div class="puuttuu" hidden></div>
+      <div class="aikajana">
+        <span class="kk"></span>
+        <input type="range" min="0" step="1" aria-label="Month">
+      </div>
+      <p class="kuvateksti"></p>`;
+    $('paneelit').appendChild(el);
+    if (mittaus) el.querySelector('.kartta').classList.add('mittaus');
+
+    const kartta = L.map(el.querySelector('.kartta'), {
+      zoomControl: false,          // the shared toolbar has the zoom buttons
+      attributionControl: true,
+      minZoom: 11, maxZoom: 18,
+      doubleClickZoom: !mittaus
+    });
+
+    // Light background map around the satellite image, for context
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19, opacity: 0.5, attribution: '© OpenStreetMap contributors'
+    }).addTo(kartta);
+
+    const p = { el, kartta, kuva: null, indeksi, mitta: L.layerGroup().addTo(kartta) };
+    paneelit.push(p);
+
+    // Start from the same view as the other panels
+    if (paneelit.length > 1) {
+      const eka = paneelit[0].kartta;
+      kartta.setView(eka.getCenter(), eka.getZoom(), { animate: false });
+    } else {
+      kartta.setView(data.paikka.keski, data.paikka.zoom);
+    }
+
+    const liuku = el.querySelector('input');
+    liuku.max = data.kuvat.length - 1;
+    liuku.value = indeksi;
+    liuku.addEventListener('input', () => naytaKuva(p, parseInt(liuku.value, 10)));
+
+    el.querySelector('.sulje').addEventListener('click', () => poistaPaneeli(p));
+
+    kartta.on('move', () => synkronoiNakyma(kartta));
+    kartta.on('move', () => paivitaKuvateksti(p));
+    kartta.on('click', e => mittaKlikki(e.latlng));
+    kartta.on('dblclick', () => { if (mittaus) lopetaMittaus(); });
+
+    naytaKuva(p, indeksi);
+    piirraMitta();
+    asettelu();
+  }
+
+  function poistaPaneeli(p) {
+    if (paneelit.length <= 1) return;
+    p.kartta.remove();
+    p.el.remove();
+    paneelit.splice(paneelit.indexOf(p), 1);
+    asettelu();
+  }
+
+  function naytaKuva(p, i) {
+    p.indeksi = i;
+    const k = data.kuvat[i];
+    const rajat = L.latLngBounds(k.rajat || data.rajat);
+    const puuttuu = p.el.querySelector('.puuttuu');
+    puuttuu.hidden = true;
+
+    if (p.kuva) p.kartta.removeLayer(p.kuva);
+    p.kuva = L.imageOverlay(k.tiedosto, rajat, {
+      attribution: `<a href="${data.lahde.url}" target="_blank" rel="noopener">${data.lahde.nimi}</a>`
+    }).addTo(p.kartta);
+    p.kuva.on('error', () => {
+      puuttuu.hidden = false;
+      puuttuu.textContent = `No image yet for ${kuukausiTeksti(k.kuukausi)}. ` +
+        `Add the file ${k.tiedosto} (see README.md in this folder).`;
+    });
+
+    p.el.querySelector('.kk').textContent = kuukausiTeksti(k.kuukausi);
+    paivitaKuvateksti(p);
+  }
+
+  // Small grey text under the image: place, coordinates of the view, capture time
+  function paivitaKuvateksti(p) {
+    const k = data.kuvat[p.indeksi];
+    p.el.querySelector('.kuvateksti').textContent =
+      `${data.paikka.nimi} · view centre ${koordTeksti(p.kartta.getCenter())} · ` +
+      `${k.satelliitti || 'Satellite'} · ${pvmTeksti(k)}`;
+  }
+
+  // Split the screen: 1–3 images side by side, 4 as 2×2, 5–6 as 3×2
+  function asettelu() {
+    const n = paneelit.length;
+    const sarakkeet = n <= 3 ? n : n === 4 ? 2 : 3;
+    $('paneelit').style.gridTemplateColumns = `repeat(${sarakkeet}, 1fr)`;
+    $('paneelit').style.gridTemplateRows = `repeat(${Math.ceil(n / sarakkeet)}, 1fr)`;
+
+    paneelit.forEach(p => p.el.querySelector('.sulje').hidden = n === 1);
+    $('lisaa').disabled = n >= data.kuvat.length;
+
+    // Leaflet must be told when its box changes size
+    setTimeout(() => paneelit.forEach(p => p.kartta.invalidateSize()), 0);
+  }
+
+  // When one map moves, move all the others to the same place
+  function synkronoiNakyma(lahde) {
+    if (synkronoi) return;
+    synkronoi = true;
+    paneelit.forEach(p => {
+      if (p.kartta !== lahde) p.kartta.setView(lahde.getCenter(), lahde.getZoom(), { animate: false });
+    });
+    synkronoi = false;
+  }
+
+  const paakartta = () => paneelit[0].kartta;
+
+  // ---------------------------------------------------------------- zoom
+  $('zoomIn').onclick = () => paakartta().zoomIn();
+  $('zoomOut').onclick = () => paakartta().zoomOut();
+  $('zoomKoko').onclick = () => paakartta().fitBounds(data.rajat);
+
+  // ---------------------------------------------------------------- measuring
+  $('mittaa').onclick = () => mittaus ? lopetaMittaus() : aloitaMittaus();
+  $('mittaTyhjenna').onclick = () => { mittaPisteet = []; piirraMitta(); };
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && mittaus) lopetaMittaus(); });
+
+  function aloitaMittaus() {
+    mittaus = true;
+    mittaPisteet = [];
+    $('mittaa').classList.add('paalla');
+    $('mittaa').textContent = 'Finish';
+    paneelit.forEach(p => {
+      p.kartta.doubleClickZoom.disable();
+      p.el.querySelector('.kartta').classList.add('mittaus');
+    });
+    piirraMitta();
+  }
+
+  function lopetaMittaus() {
+    mittaus = false;
+    $('mittaa').classList.remove('paalla');
+    $('mittaa').textContent = 'Distance';
+    paneelit.forEach(p => {
+      p.kartta.doubleClickZoom.enable();
+      p.el.querySelector('.kartta').classList.remove('mittaus');
+    });
+  }
+
+  function mittaKlikki(latlng) {
+    if (!mittaus) return;
+    // A double-click also sends two clicks: skip a point on top of the previous one
+    const ed = mittaPisteet[mittaPisteet.length - 1];
+    if (ed && paakartta().distance(ed, latlng) < 0.5) return;
+    mittaPisteet.push(latlng);
+    piirraMitta();
+  }
+
+  function mittaPituus() {
+    let m = 0;
+    for (let i = 1; i < mittaPisteet.length; i++) m += paakartta().distance(mittaPisteet[i - 1], mittaPisteet[i]);
+    return m;
+  }
+
+  function piirraMitta() {
+    const pituus = mittaPituus();
+    $('mittaTulos').textContent = mittaPisteet.length > 1 ? etaisyysTeksti(pituus)
+      : mittaus ? 'click points…' : '';
+    $('mittaTyhjenna').disabled = mittaPisteet.length === 0;
+
+    paneelit.forEach(p => {
+      p.mitta.clearLayers();
+      if (!mittaPisteet.length) return;
+      L.polyline(mittaPisteet, { color: '#e8590c', weight: 3, dashArray: '6 5' }).addTo(p.mitta);
+      mittaPisteet.forEach(pt => L.circleMarker(pt, {
+        radius: 4, color: '#fff', weight: 2, fillColor: '#e8590c', fillOpacity: 1
+      }).addTo(p.mitta));
+      if (mittaPisteet.length > 1) {
+        L.tooltip({ permanent: true, direction: 'right', offset: [8, 0], className: 'mitta-label' })
+          .setLatLng(mittaPisteet[mittaPisteet.length - 1])
+          .setContent(etaisyysTeksti(pituus))
+          .addTo(p.mitta);
+      }
+    });
+  }
+
+  // ---------------------------------------------------------------- bookmarks
+  $('kirjanmerkkiTallenna').onclick = tallennaKirjanmerkki;
+  $('kirjanmerkkiNimi').addEventListener('keydown', e => { if (e.key === 'Enter') tallennaKirjanmerkki(); });
+
+  function tallennaKirjanmerkki() {
+    const k = paakartta();
+    const nimi = $('kirjanmerkkiNimi').value.trim() || 'View ' + (kirjanmerkit.length + 1);
+    kirjanmerkit.push({ nimi, keski: k.getCenter(), zoom: k.getZoom() });
+    $('kirjanmerkkiNimi').value = '';
+
+    const s = $('kirjanmerkit');
+    s.disabled = false;
+    s.innerHTML = '<option value="">Go to bookmark…</option>' +
+      kirjanmerkit.map((b, i) => `<option value="${i}"></option>`).join('');
+    // set names as text so that any characters in the name are shown safely
+    kirjanmerkit.forEach((b, i) => s.options[i + 1].textContent = b.nimi);
+  }
+
+  $('kirjanmerkit').onchange = e => {
+    const b = kirjanmerkit[e.target.value];
+    if (b) paakartta().setView(b.keski, b.zoom);
+    e.target.value = '';
+  };
+
+  // ---------------------------------------------------------------- add image
+  $('lisaa').onclick = () => lisaaPaneeli();
+</script>
+</body>
+</html>

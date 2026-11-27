@@ -1,0 +1,20 @@
+{
+  "paikka": {
+    "nimi": "Vuosaari Harbour, Helsinki",
+    "keski": [60.2215, 25.1800],
+    "zoom": 14
+  },
+  "rajat": [[60.2000, 25.1300], [60.2400, 25.2300]],
+  "lahde": {
+    "nimi": "Contains modified Copernicus Sentinel data 2026",
+    "url": "https://browser.dataspace.copernicus.eu/"
+  },
+  "kuvat": [
+    { "kuukausi": "2026-05", "tiedosto": "kuvat/2026-05.jpg", "pvm": "", "aika": "", "satelliitti": "Sentinel-2" },
+    { "kuukausi": "2026-06", "tiedosto": "kuvat/2026-06.jpg", "pvm": "", "aika": "", "satelliitti": "Sentinel-2" },
+    { "kuukausi": "2026-07", "tiedosto": "kuvat/2026-07.jpg", "pvm": "", "aika": "", "satelliitti": "Sentinel-2" },
+    { "kuukausi": "2026-08", "tiedosto": "kuvat/2026-08.jpg", "pvm": "", "aika": "", "satelliitti": "Sentinel-2" },
+    { "kuukausi": "2026-09", "tiedosto": "kuvat/2026-09.jpg", "pvm": "", "aika": "", "satelliitti": "Sentinel-2" },
+    { "kuukausi": "2026-10", "tiedosto": "kuvat/2026-10.jpg", "pvm": "", "aika": "", "satelliitti": "Sentinel-2" }
+  ]
+}
